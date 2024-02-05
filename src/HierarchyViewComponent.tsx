@@ -1,7 +1,8 @@
-import React, { MouseEventHandler, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
 import { usePluginContext } from './appContext';
 import { getChildFiles, getParentFiles } from './hierarchyBuilder';
 import { TFile } from 'obsidian';
+import { useMemoAsync } from './hooks';
 
 type FileNodeProps = {
   file: TFile, 
@@ -118,7 +119,7 @@ const FileRelatives = ({
 }) => {
   const ctx = usePluginContext();
 
-  const files = useMemo<TFile[]>(() => {
+  const filesData = useMemoAsync<TFile[]>(async () => {
     switch (kind) {
       case 'parent':
         return getParentFiles(ctx, file)
@@ -131,7 +132,7 @@ const FileRelatives = ({
 
   const showFiles = useCallback(() => {
     setCanShowFiles(true)
-  }, [files])
+  }, [])
 
   const onMouseEnter = useCallback(() => {
     onIndentHover?.(true)
@@ -140,6 +141,9 @@ const FileRelatives = ({
   const onMouseLeave = useCallback(() => {
     onIndentHover?.(false)
   }, [onIndentHover])
+
+  if (filesData.status === 'loading') return null;
+  const files = filesData.data
 
   return (
     <div className='file-node__relatives'>
@@ -180,8 +184,6 @@ const View = () => {
     updateCurrentFile()
   }, [])
 
-
-
   return (
     <div>
       <button onClick={() => updateCurrentFile()}>Refresh</button>
@@ -198,3 +200,4 @@ const View = () => {
 }
 
 export default View;
+

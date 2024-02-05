@@ -2,59 +2,89 @@ import { TFile } from 'obsidian';
 import { PluginContext } from './types';
 import { getFileBacklinks, getFileByPath } from './helpers';
 
-export const getParentFiles = (ctx: PluginContext, file: TFile): TFile[] => {
-    const frontMatterLinks = ctx.app.metadataCache.getFileCache(file)?.frontmatterLinks
+const checkHasPropByPosition = async (ctx: PluginContext, file: TFile, startOffset: number): Promise<boolean> => {
+    const content = await ctx.app.vault.read(file);
+      
+    let currentIndex = startOffset - 1
+    const lineChars =  [] as string[];
 
-    if (!frontMatterLinks) return []
+    while (currentIndex >= 0) {
+        const char = content[currentIndex]
+        if (char === '\n') break
+        lineChars.push(char)
+        currentIndex -= 1
+    }
 
-    return frontMatterLinks.reduce((acc, item) => {
-        const [itemKey] = item.key.split('.')
-        if (itemKey === ctx.settings.parentPropName) {
-            const file = ctx.app.metadataCache.getFirstLinkpathDest(item.link, '')
-            if (file) {
-                acc.push(file)
-            }
-        }
-        return acc
-    }, [] as TFile[])
+    lineChars.reverse()
+    const line = lineChars.join('')
+
+    // FIXME false positive matches are possible
+    return Boolean(line.match(RegExp(`(^\\s*-?\\s*|\\[)${ctx.settings.parentPropName}::\\s*`)))
 }
 
-export const getChildFiles = (ctx: PluginContext, file: TFile): TFile[] => {
+export const getParentFiles = async (ctx: PluginContext, file: TFile): Promise<TFile[]> => {
+    const result = [] as TFile[]
+
+    const metadata = ctx.app.metadataCache.getFileCache(file)
+
+    const frontMatterLinks = metadata?.frontmatterLinks
+
+    if (frontMatterLinks) {
+        for (const item of frontMatterLinks) {
+            if (item.key.split('.')[0] === ctx.settings.parentPropName) {
+                const linkedFile = getFileByPath(ctx, item.link)
+                if (linkedFile) {
+                    result.push(linkedFile)
+                }
+            }
+        }
+    }
+
+    const links = metadata?.links
+
+    if (links) {
+        for (const item of links) {
+            if (await checkHasPropByPosition(ctx, file, item.position.start.offset)) {
+                const linkedFile = getFileByPath(ctx, item.link)
+                if (linkedFile) {
+                    result.push(linkedFile)
+                }
+            }
+        }
+    }
+
+    return result
+}
+
+export const getChildFiles = async (ctx: PluginContext, file: TFile): Promise<TFile[]> => {
   const childFiles: TFile[] = [];
 
   const backlinks = getFileBacklinks(ctx, file)
 
   for (const [childPath, childLinks] of Object.entries(backlinks)) {
     for (const childLink of childLinks) {
-      if (!childLink.key) continue
+      // if frontmatter
+      if ('key' in childLink && childLink.key) {
+        const [childLinkKey] = childLink.key.split('.')
 
-      const [childLinkKey] = childLink.key.split('.')
-
-      if (childLinkKey === ctx.settings.parentPropName) {
-        const file = getFileByPath(ctx, childPath)
-        if (file) {
-          childFiles.push(file)
+        if (childLinkKey === ctx.settings.parentPropName) {
+          const childFile = getFileByPath(ctx, childPath)
+          if (childFile) {
+            childFiles.push(childFile)
+          }
+        }
+      // if inline
+      } else if ('position' in childLink)  {
+        const childFile = getFileByPath(ctx, childPath)
+        if (
+            childFile && 
+            await checkHasPropByPosition(ctx, childFile, childLink.position.start.offset)
+        ) {
+            childFiles.push(childFile)
         }
       }
     }
   }
 
   return childFiles;
-}
-
-
-interface HierarchyNode {
-  file: TFile;
-  getParents: () => HierarchyNode[];
-  getChildren: () => HierarchyNode[];
-}
-
-export const getFileHierarchy = (ctx: PluginContext, file: TFile) => {
-  const hierarchy: HierarchyNode = {
-    file,
-    getParents: () => getParentFiles(ctx, file).map(f => getFileHierarchy(ctx, f)),
-    getChildren: () => getChildFiles(ctx, file).map(f => getFileHierarchy(ctx, f))
-  }
-
-  return hierarchy
 }
