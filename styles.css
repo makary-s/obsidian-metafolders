@@ -1,19 +1,22 @@
-.obs-icon-button {
-	cursor: pointer;
+.obs-icon {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: 2px;
 	padding: 2px;
 	transition: all 300ms;
+	border-radius: 2px;
 }
 
-.obs-icon-button:hover {
+.obs-icon_clickable {
+	cursor: pointer;
+}
+
+.obs-icon_clickable:hover {
 	background: rgba(0, 0, 0, 0.1);
 	box-shadow: 0px 0px 5px 0px #00000017;
 }
 
-.obs-icon-button:hover > svg {
+.obs-icon_clickable:hover > svg {
 	scale: 1.1;
 }
 
@@ -43,10 +46,12 @@
 .file-node__container_kind-root {
 	font-weight: 650;
 	border: 1px solid #bbbbbbad;
+	border-radius: 2px;
+	padding: 8px 12px;
 }
 
 .file-node__container_highlight {
-	background: rgb(230, 230, 230);
+	background: rgb(230, 230, 230, 0.5);
 }
 
 .file-node__relatives {
@@ -68,17 +73,14 @@
 }
 
 .file-node__indent_highlight {
-	background-color: rgb(230, 230, 230);
+	background-color: rgba(230, 230, 230, 0.5);
 }
 
-.file-node__load-button {
-	background-color: transparent !important;
-	box-shadow: none !important;
-	border-radius: 0px !important;
-	align-items: flex-start;
-}
-
-.file-node__load-button:hover {
-	background-color: rgb(230, 230, 230) !important;
-	cursor: pointer;
+.top-panel {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+	align-items: center;
+	margin-bottom: 24px;
+	color: gray;
 }

@@ -9,14 +9,14 @@ import { usePluginContext } from '../hooks/appContext'
 import { getChildFiles, getParentFiles } from '../utils/hierarchyBuilder'
 import { TFile } from 'obsidian'
 import { useMemoAsync } from '../hooks/useMemoAsync'
-import { ObsIconButton } from './ObsIconButton'
+import { ObsIcon } from './ObsIcon'
 
 type BaseFileNodeProps = {
-	readonly file: TFile
-	readonly updateCurrentFile: (file?: TFile) => void
+	file: TFile
+	updateCurrentFile: (file?: TFile) => void
 }
 type FileNodeProps = BaseFileNodeProps & {
-	readonly kind: 'child' | 'parent'
+	kind: 'child' | 'parent'
 }
 
 function RootFileNode({
@@ -48,11 +48,25 @@ function RootFileNode({
 		[file]
 	)
 
+	const parentFilesAsync = useMemoAsync<TFile[]>(async () => {
+		return getParentFiles(ctx, file)
+	}, [file, ctx])
+
+	const childFilesAsync = useMemoAsync<TFile[]>(async () => {
+		return getChildFiles(ctx, file)
+	}, [file, ctx])
+
+	if (
+		parentFilesAsync.status === 'loading' ||
+		childFilesAsync.status === 'loading'
+	) {
+		return <div>Loading...</div>
+	}
+
 	return (
 		<div className="file-node">
 			<FileRelatives
-				canShowFiles
-				file={file}
+				files={parentFilesAsync.data}
 				hasIndent={false}
 				highlight={highlight}
 				kind="parent"
@@ -76,8 +90,7 @@ function RootFileNode({
 			</div>
 
 			<FileRelatives
-				canShowFiles
-				file={file}
+				files={childFilesAsync.data}
 				hasIndent={false}
 				highlight={highlight}
 				kind="child"
@@ -107,7 +120,7 @@ function FileNode({ file, kind, updateCurrentFile }: FileNodeProps) {
 
 			if (clickCount.current.count === 1) {
 				const now = Date.now()
-				if (now - clickCount.current.timestamp < 1000) {
+				if (now - clickCount.current.timestamp < 300) {
 					clickCount.current.count = 0
 					clickCount.current.timestamp = 0
 					updateCurrentFile(file)
@@ -126,6 +139,36 @@ function FileNode({ file, kind, updateCurrentFile }: FileNodeProps) {
 		[file]
 	)
 
+	const [expanded, setExpanded] = useState(false)
+
+	const toggleExpand: MouseEventHandler<HTMLElement> = useCallback((e) => {
+		e.stopPropagation()
+		setExpanded((x) => !x)
+	}, [])
+
+	const relativeFilesAsync = useMemoAsync<TFile[]>(async () => {
+		switch (kind) {
+			case 'parent':
+				return getParentFiles(ctx, file)
+			case 'child':
+				return getChildFiles(ctx, file)
+		}
+	}, [kind, file, ctx])
+
+	const expanderIcon =
+		relativeFilesAsync.status === 'loading'
+			? { kind: 'loader' }
+			: relativeFilesAsync.data.length === 0
+				? { kind: 'dot' }
+				: {
+						kind: expanded
+							? kind === 'child'
+								? 'chevron-down'
+								: 'chevron-up'
+							: 'chevron-right',
+						onClick: toggleExpand,
+					}
+
 	return (
 		<div className={`file-node file-node_kind-${kind}`}>
 			<div
@@ -140,63 +183,40 @@ function FileNode({ file, kind, updateCurrentFile }: FileNodeProps) {
 				onMouseEnter={() => onIndentHover(true)}
 				onMouseLeave={() => onIndentHover(false)}
 			>
-				<ObsIconButton
-					kind={kind === 'child' ? 'chevron-down' : 'chevron-up'}
-					className="file-node__expander"
-					// TODO: implement expanding
-					onClick={() => {}}
-				/>
+				<ObsIcon {...expanderIcon} className="file-node__expander" />
 
 				<div>{file.basename}</div>
 			</div>
 
-			<FileRelatives
-				canShowFiles={false}
-				file={file}
-				hasIndent
-				highlight={highlight}
-				kind={kind === 'child' ? 'parent' : 'child'}
-				onIndentHover={onIndentHover}
-				updateCurrentFile={updateCurrentFile}
-			/>
+			{relativeFilesAsync.status === 'ready' && expanded ? (
+				<FileRelatives
+					files={relativeFilesAsync.data}
+					hasIndent
+					highlight={highlight}
+					kind={kind}
+					onIndentHover={onIndentHover}
+					updateCurrentFile={updateCurrentFile}
+				/>
+			) : null}
 		</div>
 	)
 }
 
 function FileRelatives({
-	file,
+	files,
 	kind,
 	onIndentHover,
 	highlight,
-	canShowFiles: initialCanShowFiles,
 	updateCurrentFile,
 	hasIndent,
 }: {
-	readonly file: TFile
-	readonly kind: 'parent' | 'child'
-	readonly onIndentHover?: (hovered: boolean) => void
-	readonly highlight: boolean
-	readonly canShowFiles?: boolean
-	readonly updateCurrentFile: () => void
-	readonly hasIndent: boolean
+	files: TFile[]
+	kind: 'parent' | 'child'
+	onIndentHover?: (hovered: boolean) => void
+	highlight: boolean
+	updateCurrentFile: () => void
+	hasIndent: boolean
 }) {
-	const ctx = usePluginContext()
-
-	const filesData = useMemoAsync<TFile[]>(async () => {
-		switch (kind) {
-			case 'parent':
-				return getParentFiles(ctx, file)
-			case 'child':
-				return getChildFiles(ctx, file)
-		}
-	}, [kind, file, ctx])
-
-	const [canShowFiles, setCanShowFiles] = useState(initialCanShowFiles)
-
-	const showFiles = useCallback(() => {
-		setCanShowFiles(true)
-	}, [])
-
 	const onMouseEnter = useCallback(() => {
 		onIndentHover?.(true)
 	}, [onIndentHover])
@@ -204,9 +224,6 @@ function FileRelatives({
 	const onMouseLeave = useCallback(() => {
 		onIndentHover?.(false)
 	}, [onIndentHover])
-
-	if (filesData.status === 'loading') return null
-	const files = filesData.data
 
 	return (
 		<div className="file-node__relatives">
@@ -221,22 +238,15 @@ function FileRelatives({
 				/>
 			) : null}
 
-			{Boolean(!canShowFiles && files.length) && (
-				<button className="file-node__load-button" onClick={showFiles}>
-					...
-				</button>
-			)}
-
 			<div className="file-node__relatives-container">
-				{Boolean(canShowFiles) &&
-					files.map((child) => (
-						<FileNode
-							file={child}
-							key={child.path}
-							kind={kind}
-							updateCurrentFile={updateCurrentFile}
-						/>
-					))}
+				{files.map((child) => (
+					<FileNode
+						file={child}
+						key={child.path}
+						kind={kind}
+						updateCurrentFile={updateCurrentFile}
+					/>
+				))}
 			</div>
 		</div>
 	)
@@ -259,7 +269,12 @@ function View() {
 
 	return (
 		<div>
-			<button onClick={() => updateCurrentFile()}>Refresh</button>
+			<div className="top-panel">
+				<ObsIcon
+					kind="refresh-cw"
+					onClick={() => updateCurrentFile()}
+				/>
+			</div>
 
 			{file ? (
 				<RootFileNode
