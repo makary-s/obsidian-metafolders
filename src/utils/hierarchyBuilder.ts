@@ -1,6 +1,6 @@
 import { TFile } from 'obsidian';
-import { PluginContext } from './types';
-import { getFileBacklinks, getFileByPath } from './helpers';
+import { PluginContext } from '../types';
+import { getFileBacklinks, getFileByPath } from './obsidian';
 
 const checkHasPropByPosition = async (ctx: PluginContext, file: TFile, startOffset: number): Promise<boolean> => {
     const content = await ctx.app.vault.read(file);

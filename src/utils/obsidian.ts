@@ -1,5 +1,5 @@
 import { LinkCache, TFile } from "obsidian";
-import { PluginContext } from "./types";
+import { PluginContext } from "../types";
 import { SMarkdownPage } from "obsidian-dataview";
 
 export const getFileByPath = (

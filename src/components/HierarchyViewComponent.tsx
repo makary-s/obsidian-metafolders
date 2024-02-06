@@ -1,14 +1,79 @@
 import React, { MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
-import { usePluginContext } from './appContext';
-import { getChildFiles, getParentFiles } from './hierarchyBuilder';
+import { usePluginContext } from '../hooks/appContext';
+import { getChildFiles, getParentFiles } from '../utils/hierarchyBuilder';
 import { TFile } from 'obsidian';
-import { useMemoAsync } from './hooks';
+import { useMemoAsync } from '../hooks/useMemoAsync';
+import {ObsIconButton} from './ObsIconButton'
 
-type FileNodeProps = {
+
+type BaseFileNodeProps = {
   file: TFile, 
-  kind: 'root' | 'child' | 'parent'
   updateCurrentFile: (file?: TFile) => void
 }
+type FileNodeProps =  BaseFileNodeProps & {
+  kind: 'child' | 'parent'
+}
+
+
+const RootFileNode = ({
+  file, 
+  updateCurrentFile
+}: BaseFileNodeProps) => {
+  const ctx = usePluginContext()
+  const [highlight, setHighlight] = useState(false)
+
+  const onIndentHover = useCallback((currentHovered: boolean) => {
+    setHighlight(currentHovered)
+  }, [file])
+
+  const onClick: MouseEventHandler<HTMLDivElement> = useCallback((e) => {
+    const isNewTab =  e.ctrlKey || e.metaKey 
+      ? e.altKey 
+        ? 'split' 
+        : 'tab' 
+      : false
+
+    updateCurrentFile(file)
+  
+    ctx.app.workspace.openLinkText(file.path, '', isNewTab, { active: true});
+  }, [file])
+
+  return (
+    <div className={'file-node'}>
+      <FileRelatives
+        file={file}
+        kind='parent' 
+        highlight={highlight}
+        onIndentHover={onIndentHover}
+        canShowFiles={true}
+        updateCurrentFile={updateCurrentFile}
+        hasIndent={false}
+      />
+      <div
+        className={[
+          'file-node__container',
+          highlight ? 'file-node__container_highlight' : '',
+          `file-node__container_kind-root`
+        ].filter(Boolean).join(' ')}
+        onMouseEnter={() => onIndentHover(true)}
+        onMouseLeave={() => onIndentHover(false)}
+        onClick={onClick}
+      >
+        <div>{file.basename}</div>
+      </div>
+      <FileRelatives
+        file={file}
+        kind='child'
+        highlight={highlight}
+        onIndentHover={onIndentHover}
+        canShowFiles={true}
+        updateCurrentFile={updateCurrentFile}
+        hasIndent={false}
+      />
+    </div>
+  )
+}
+
 
 const FileNode = ({
   file, 
@@ -30,9 +95,7 @@ const FileNode = ({
         : 'tab' 
       : false
 
-    if (kind === 'root') {
-      updateCurrentFile(file)
-    } else if (clickCount.current.count === 1) {
+    if (clickCount.current.count === 1) {
       const now = Date.now()
       if (now - clickCount.current.timestamp < 1000) {
         clickCount.current.count = 0
@@ -49,23 +112,9 @@ const FileNode = ({
     ctx.app.workspace.openLinkText(file.path, '', isNewTab, { active: true});
   }, [file])
 
+
   return (
-    <div className={'file-node'}>
-      {
-        kind === 'child' 
-          ? null 
-          : (
-            <FileRelatives
-            file={file}
-            kind='parent' 
-            highlight={highlight}
-            onIndentHover={onIndentHover}
-            canShowFiles={kind === 'root'}
-            updateCurrentFile={updateCurrentFile}
-            hasIndent={kind !== 'root'}
-            />
-          )
-      }
+    <div className={`file-node file-node_kind-${kind}`}>
       <div
         className={[
           'file-node__container',
@@ -76,29 +125,26 @@ const FileNode = ({
         onMouseLeave={() => onIndentHover(false)}
         onClick={onClick}
       >
-          {file.basename}
+        <ObsIconButton 
+          kind={kind === 'child' ? "chevron-down" : "chevron-up"} 
+          className={"file-node__expander"}
+          // TODO: implement expanding
+          onClick={() => {}}
+        />
+        <div>{file.basename}</div>
       </div>
-      {
-        kind === 'parent' 
-          ? null 
-          : (
-            <FileRelatives
-              file={file}
-              kind='child'
-              highlight={highlight}
-              onIndentHover={onIndentHover}
-              canShowFiles={kind === 'root'}
-              updateCurrentFile={updateCurrentFile}
-              hasIndent={kind !== 'root'}
-            />
-          )
-      }
+      <FileRelatives
+        file={file}
+        kind={kind ==='child' ? 'parent' : 'child'}
+        highlight={highlight}
+        onIndentHover={onIndentHover}
+        canShowFiles={false}
+        updateCurrentFile={updateCurrentFile}
+        hasIndent={true}
+      />
     </div>
   )
 }
-
-
-
 
 const FileRelatives = ({ 
   file,
@@ -188,9 +234,8 @@ const View = () => {
     <div>
       <button onClick={() => updateCurrentFile()}>Refresh</button>
       {file && (
-        <FileNode 
+        <RootFileNode
           file={file} 
-          kind='root' 
           key={file.path + key} 
           updateCurrentFile={updateCurrentFile}
         />

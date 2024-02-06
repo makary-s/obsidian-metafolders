@@ -1,8 +1,8 @@
 import { Root, createRoot } from "react-dom/client";
 import React from 'react';
 import { ItemView, WorkspaceLeaf } from 'obsidian';
-import HierarchyViewComponent from './HierarchyViewComponent';
-import {AppContext} from './appContext'
+import HierarchyViewComponent from './components/HierarchyViewComponent';
+import {AppContext} from './hooks/appContext'
 import { PluginSettings } from "./types";
 import { getAPI } from "obsidian-dataview";
 

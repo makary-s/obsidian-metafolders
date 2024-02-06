@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { PluginContext } from "./types";
+import { PluginContext } from "../types";
 
 export const AppContext = createContext<PluginContext | undefined>(undefined);
 
