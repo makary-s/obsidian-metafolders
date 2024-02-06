@@ -1,87 +1,84 @@
 .obs-icon-button {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 2px;
-  padding: 2px;
-  transition: all 300ms;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 2px;
+	padding: 2px;
+	transition: all 300ms;
 }
 
 .obs-icon-button:hover {
-  background: rgba(0, 0, 0, 0.1);
-  box-shadow: 0px 0px 5px 0px #00000017;
+	background: rgba(0, 0, 0, 0.1);
+	box-shadow: 0px 0px 5px 0px #00000017;
 }
 
 .obs-icon-button:hover > svg {
-  scale: 1.1;
+	scale: 1.1;
 }
 
-
 .file-node {
-  display: flex;
-  flex-direction: column;
+	display: flex;
+	flex-direction: column;
 }
 
 .file-node_kind-parent {
-  flex-direction: column-reverse;
+	flex-direction: column-reverse;
 }
 
 .file-node_kind-child {
-  flex-direction: column;
+	flex-direction: column;
 }
 
-
 .file-node__container {
-  display: flex;
-  flex-direction: row;
-  padding: 4px;
-  margin-left: 0px;
-  cursor: pointer;
-  transition: all 300ms;
-  gap: 4px;
+	display: flex;
+	flex-direction: row;
+	padding: 4px;
+	margin-left: 0px;
+	cursor: pointer;
+	transition: all 300ms;
+	gap: 4px;
 }
 
 .file-node__container_kind-root {
-  font-weight: 650;
-  border: 1px solid #bbbbbbad;
+	font-weight: 650;
+	border: 1px solid #bbbbbbad;
 }
 
 .file-node__container_highlight {
-  background: rgb(230, 230, 230);
+	background: rgb(230, 230, 230);
 }
 
 .file-node__relatives {
-  display: flex;
-  flex-direction: row;
+	display: flex;
+	flex-direction: row;
 }
 
 .file-node__relatives-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  cursor: pointer;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	cursor: pointer;
 }
 
-
 .file-node__indent {
-  padding-left: 14px;
-  border-right: 1px solid #bbbbbbad;
-  transition: all 300ms
+	padding-left: 14px;
+	border-right: 1px solid #bbbbbbad;
+	transition: all 300ms;
 }
 
 .file-node__indent_highlight {
-  background-color: rgb(230, 230, 230);
+	background-color: rgb(230, 230, 230);
 }
 
 .file-node__load-button {
-  background-color: transparent !important;
-  box-shadow: none !important;
-  border-radius: 0px !important;
-  align-items: flex-start;
+	background-color: transparent !important;
+	box-shadow: none !important;
+	border-radius: 0px !important;
+	align-items: flex-start;
 }
 
 .file-node__load-button:hover {
-  background-color: rgb(230, 230, 230) !important;
-  cursor: pointer;
+	background-color: rgb(230, 230, 230) !important;
+	cursor: pointer;
 }
