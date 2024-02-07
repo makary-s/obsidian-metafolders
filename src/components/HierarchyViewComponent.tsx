@@ -5,29 +5,29 @@ import React, {
 	useRef,
 	useState,
 } from "react";
+import { useStore } from "zustand";
 import { usePluginContext } from "../hooks/appContext";
 import { getChildFiles, getParentFiles } from "../utils/hierarchyBuilder";
 import { TFile } from "obsidian";
 import { useMemoAsync } from "../hooks/useMemoAsync";
 import { ObsIcon } from "./ObsIcon";
+import { appState, filesData } from "src/state";
 
 type BaseFileNodeProps = {
 	file: TFile;
 	updateCurrentFile: (file?: TFile) => void;
 };
+
 type FileNodeProps = BaseFileNodeProps & {
 	kind: "child" | "parent";
+	depth: number;
 };
 
 function RootFileNode({ file, updateCurrentFile }: BaseFileNodeProps) {
 	const ctx = usePluginContext();
-	const [highlight, setHighlight] = useState(false);
 
-	const onIndentHover = useCallback(
-		(currentHovered: boolean) => {
-			setHighlight(currentHovered);
-		},
-		[file],
+	const [highlighted, setHighlighted] = filesData.highlighted.useStore(
+		file.path,
 	);
 
 	const onClick: MouseEventHandler<HTMLDivElement> = useCallback(
@@ -64,23 +64,24 @@ function RootFileNode({ file, updateCurrentFile }: BaseFileNodeProps) {
 			<FileRelatives
 				files={parentFilesAsync.data}
 				hasIndent={false}
-				highlight={highlight}
+				highlight={highlighted}
 				kind="parent"
-				onIndentHover={onIndentHover}
+				onIndentHover={setHighlighted}
 				updateCurrentFile={updateCurrentFile}
+				depth={0}
 			/>
 
 			<div
 				className={[
 					"file-node__container",
-					highlight ? "file-node__container_highlight" : "",
+					highlighted ? "file-node__container_highlight" : "",
 					`file-node__container_kind-root`,
 				]
 					.filter(Boolean)
 					.join(" ")}
 				onClick={onClick}
-				onMouseEnter={() => onIndentHover(true)}
-				onMouseLeave={() => onIndentHover(false)}
+				onMouseEnter={() => setHighlighted(true)}
+				onMouseLeave={() => setHighlighted(false)}
 			>
 				<div>{file.basename}</div>
 			</div>
@@ -88,25 +89,22 @@ function RootFileNode({ file, updateCurrentFile }: BaseFileNodeProps) {
 			<FileRelatives
 				files={childFilesAsync.data}
 				hasIndent={false}
-				highlight={highlight}
+				highlight={highlighted}
 				kind="child"
-				onIndentHover={onIndentHover}
+				onIndentHover={setHighlighted}
 				updateCurrentFile={updateCurrentFile}
+				depth={0}
 			/>
 		</div>
 	);
 }
 
-function FileNode({ file, kind, updateCurrentFile }: FileNodeProps) {
+function FileNode({ file, kind, updateCurrentFile, depth }: FileNodeProps) {
 	const ctx = usePluginContext();
-	const [highlight, setHighlight] = useState(false);
 	const clickCount = useRef({ count: 0, timestamp: -1 });
 
-	const onIndentHover = useCallback(
-		(currentHovered: boolean) => {
-			setHighlight(currentHovered);
-		},
-		[file],
+	const [highlighted, setHighlighted] = filesData.highlighted.useStore(
+		file.path,
 	);
 
 	const onClick: MouseEventHandler<HTMLDivElement> = useCallback(
@@ -135,7 +133,9 @@ function FileNode({ file, kind, updateCurrentFile }: FileNodeProps) {
 		[file],
 	);
 
-	const [expanded, setExpanded] = useState(false);
+	const [expanded, setExpanded] = filesData.expanded.useStore(
+		`${file.path}::${kind}::${depth}`,
+	);
 
 	const toggleExpand: MouseEventHandler<HTMLElement> = useCallback((e) => {
 		e.stopPropagation();
@@ -170,14 +170,14 @@ function FileNode({ file, kind, updateCurrentFile }: FileNodeProps) {
 			<div
 				className={[
 					"file-node__container",
-					highlight ? "file-node__container_highlight" : "",
+					highlighted ? "file-node__container_highlight" : "",
 					`file-node__container_kind-${kind}`,
 				]
 					.filter(Boolean)
 					.join(" ")}
 				onClick={onClick}
-				onMouseEnter={() => onIndentHover(true)}
-				onMouseLeave={() => onIndentHover(false)}
+				onMouseEnter={() => setHighlighted(true)}
+				onMouseLeave={() => setHighlighted(false)}
 			>
 				<ObsIcon {...expanderIcon} className="file-node__expander" />
 
@@ -188,10 +188,11 @@ function FileNode({ file, kind, updateCurrentFile }: FileNodeProps) {
 				<FileRelatives
 					files={relativeFilesAsync.data}
 					hasIndent
-					highlight={highlight}
+					highlight={highlighted}
 					kind={kind}
-					onIndentHover={onIndentHover}
+					onIndentHover={setHighlighted}
 					updateCurrentFile={updateCurrentFile}
+					depth={depth + 1}
 				/>
 			) : null}
 		</div>
@@ -205,6 +206,7 @@ function FileRelatives({
 	highlight,
 	updateCurrentFile,
 	hasIndent,
+	depth,
 }: {
 	files: TFile[];
 	kind: "parent" | "child";
@@ -212,6 +214,7 @@ function FileRelatives({
 	highlight: boolean;
 	updateCurrentFile: () => void;
 	hasIndent: boolean;
+	depth: number;
 }) {
 	const onMouseEnter = useCallback(() => {
 		onIndentHover?.(true);
@@ -241,6 +244,7 @@ function FileRelatives({
 						key={child.path}
 						kind={kind}
 						updateCurrentFile={updateCurrentFile}
+						depth={depth}
 					/>
 				))}
 			</div>
@@ -251,18 +255,20 @@ function FileRelatives({
 function View() {
 	const ctx = usePluginContext();
 
-	const [file, setFile] = useState<TFile | null>(null);
 	const [key, update] = useState(false);
+	const rootFile = useStore(appState, (s) => s.rootFile);
 
 	const updateCurrentFile = useCallback(
 		(newFile_?: TFile) => {
+			const { rootFile } = appState.getState();
+
 			const newFile = newFile_ ?? ctx.app.workspace.getActiveFile();
-			if (file?.path !== newFile?.path) {
-				setFile(newFile);
+			if (rootFile?.path !== newFile?.path) {
+				appState.setState((s) => ({ ...s, rootFile: newFile }));
+				update((x) => !x);
 			}
-			update((x) => !x);
 		},
-		[file, setFile, update],
+		[update],
 	);
 
 	const [isAutoRefresh, setAutoRefresh] = useState(false);
@@ -294,10 +300,10 @@ function View() {
 				/>
 			</div>
 
-			{file ? (
+			{rootFile ? (
 				<RootFileNode
-					file={file}
-					key={file.path + key}
+					file={rootFile}
+					key={rootFile.path + key}
 					updateCurrentFile={updateCurrentFile}
 				/>
 			) : null}
