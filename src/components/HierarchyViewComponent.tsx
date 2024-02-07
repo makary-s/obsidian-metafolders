@@ -4,63 +4,59 @@ import React, {
 	useEffect,
 	useRef,
 	useState,
-} from 'react'
-import { usePluginContext } from '../hooks/appContext'
-import { getChildFiles, getParentFiles } from '../utils/hierarchyBuilder'
-import { TFile } from 'obsidian'
-import { useMemoAsync } from '../hooks/useMemoAsync'
-import { ObsIcon } from './ObsIcon'
+} from "react";
+import { usePluginContext } from "../hooks/appContext";
+import { getChildFiles, getParentFiles } from "../utils/hierarchyBuilder";
+import { TFile } from "obsidian";
+import { useMemoAsync } from "../hooks/useMemoAsync";
+import { ObsIcon } from "./ObsIcon";
 
 type BaseFileNodeProps = {
-	file: TFile
-	updateCurrentFile: (file?: TFile) => void
-}
+	file: TFile;
+	updateCurrentFile: (file?: TFile) => void;
+};
 type FileNodeProps = BaseFileNodeProps & {
-	kind: 'child' | 'parent'
-}
+	kind: "child" | "parent";
+};
 
-function RootFileNode({
-	file,
-
-	updateCurrentFile,
-}: BaseFileNodeProps) {
-	const ctx = usePluginContext()
-	const [highlight, setHighlight] = useState(false)
+function RootFileNode({ file, updateCurrentFile }: BaseFileNodeProps) {
+	const ctx = usePluginContext();
+	const [highlight, setHighlight] = useState(false);
 
 	const onIndentHover = useCallback(
 		(currentHovered: boolean) => {
-			setHighlight(currentHovered)
+			setHighlight(currentHovered);
 		},
-		[file]
-	)
+		[file],
+	);
 
 	const onClick: MouseEventHandler<HTMLDivElement> = useCallback(
 		(e) => {
 			const isNewTab =
-				e.ctrlKey || e.metaKey ? (e.altKey ? 'split' : 'tab') : false
+				e.ctrlKey || e.metaKey ? (e.altKey ? "split" : "tab") : false;
 
-			updateCurrentFile(file)
+			updateCurrentFile(file);
 
-			ctx.app.workspace.openLinkText(file.path, '', isNewTab, {
+			ctx.app.workspace.openLinkText(file.path, "", isNewTab, {
 				active: true,
-			})
+			});
 		},
-		[file]
-	)
+		[file],
+	);
 
 	const parentFilesAsync = useMemoAsync<TFile[]>(async () => {
-		return getParentFiles(ctx, file)
-	}, [file, ctx])
+		return getParentFiles(ctx, file);
+	}, [file, ctx]);
 
 	const childFilesAsync = useMemoAsync<TFile[]>(async () => {
-		return getChildFiles(ctx, file)
-	}, [file, ctx])
+		return getChildFiles(ctx, file);
+	}, [file, ctx]);
 
 	if (
-		parentFilesAsync.status === 'loading' ||
-		childFilesAsync.status === 'loading'
+		parentFilesAsync.status === "loading" ||
+		childFilesAsync.status === "loading"
 	) {
-		return <div>Loading...</div>
+		return null;
 	}
 
 	return (
@@ -76,12 +72,12 @@ function RootFileNode({
 
 			<div
 				className={[
-					'file-node__container',
-					highlight ? 'file-node__container_highlight' : '',
+					"file-node__container",
+					highlight ? "file-node__container_highlight" : "",
 					`file-node__container_kind-root`,
 				]
 					.filter(Boolean)
-					.join(' ')}
+					.join(" ")}
 				onClick={onClick}
 				onMouseEnter={() => onIndentHover(true)}
 				onMouseLeave={() => onIndentHover(false)}
@@ -98,87 +94,87 @@ function RootFileNode({
 				updateCurrentFile={updateCurrentFile}
 			/>
 		</div>
-	)
+	);
 }
 
 function FileNode({ file, kind, updateCurrentFile }: FileNodeProps) {
-	const ctx = usePluginContext()
-	const [highlight, setHighlight] = useState(false)
-	const clickCount = useRef({ count: 0, timestamp: -1 })
+	const ctx = usePluginContext();
+	const [highlight, setHighlight] = useState(false);
+	const clickCount = useRef({ count: 0, timestamp: -1 });
 
 	const onIndentHover = useCallback(
 		(currentHovered: boolean) => {
-			setHighlight(currentHovered)
+			setHighlight(currentHovered);
 		},
-		[file]
-	)
+		[file],
+	);
 
 	const onClick: MouseEventHandler<HTMLDivElement> = useCallback(
 		(e) => {
 			const isNewTab =
-				e.ctrlKey || e.metaKey ? (e.altKey ? 'split' : 'tab') : false
+				e.ctrlKey || e.metaKey ? (e.altKey ? "split" : "tab") : false;
 
 			if (clickCount.current.count === 1) {
-				const now = Date.now()
+				const now = Date.now();
 				if (now - clickCount.current.timestamp < 300) {
-					clickCount.current.count = 0
-					clickCount.current.timestamp = 0
-					updateCurrentFile(file)
+					clickCount.current.count = 0;
+					clickCount.current.timestamp = 0;
+					updateCurrentFile(file);
 				} else {
-					clickCount.current.count = 1
-					clickCount.current.timestamp = now
+					clickCount.current.count = 1;
+					clickCount.current.timestamp = now;
 				}
 			} else {
-				clickCount.current.count = 1
-				clickCount.current.timestamp = Date.now()
+				clickCount.current.count = 1;
+				clickCount.current.timestamp = Date.now();
 			}
-			ctx.app.workspace.openLinkText(file.path, '', isNewTab, {
+			ctx.app.workspace.openLinkText(file.path, "", isNewTab, {
 				active: true,
-			})
+			});
 		},
-		[file]
-	)
+		[file],
+	);
 
-	const [expanded, setExpanded] = useState(false)
+	const [expanded, setExpanded] = useState(false);
 
 	const toggleExpand: MouseEventHandler<HTMLElement> = useCallback((e) => {
-		e.stopPropagation()
-		setExpanded((x) => !x)
-	}, [])
+		e.stopPropagation();
+		setExpanded((x) => !x);
+	}, []);
 
 	const relativeFilesAsync = useMemoAsync<TFile[]>(async () => {
 		switch (kind) {
-			case 'parent':
-				return getParentFiles(ctx, file)
-			case 'child':
-				return getChildFiles(ctx, file)
+			case "parent":
+				return getParentFiles(ctx, file);
+			case "child":
+				return getChildFiles(ctx, file);
 		}
-	}, [kind, file, ctx])
+	}, [kind, file, ctx]);
 
 	const expanderIcon =
-		relativeFilesAsync.status === 'loading'
-			? { kind: 'loader' }
+		relativeFilesAsync.status === "loading"
+			? { kind: "dot" }
 			: relativeFilesAsync.data.length === 0
-				? { kind: 'dot' }
+				? { kind: "dot" }
 				: {
 						kind: expanded
-							? kind === 'child'
-								? 'chevron-down'
-								: 'chevron-up'
-							: 'chevron-right',
+							? kind === "child"
+								? "chevron-down"
+								: "chevron-up"
+							: "chevron-right",
 						onClick: toggleExpand,
-					}
+					};
 
 	return (
 		<div className={`file-node file-node_kind-${kind}`}>
 			<div
 				className={[
-					'file-node__container',
-					highlight ? 'file-node__container_highlight' : '',
+					"file-node__container",
+					highlight ? "file-node__container_highlight" : "",
 					`file-node__container_kind-${kind}`,
 				]
 					.filter(Boolean)
-					.join(' ')}
+					.join(" ")}
 				onClick={onClick}
 				onMouseEnter={() => onIndentHover(true)}
 				onMouseLeave={() => onIndentHover(false)}
@@ -188,7 +184,7 @@ function FileNode({ file, kind, updateCurrentFile }: FileNodeProps) {
 				<div>{file.basename}</div>
 			</div>
 
-			{relativeFilesAsync.status === 'ready' && expanded ? (
+			{relativeFilesAsync.status === "ready" && expanded ? (
 				<FileRelatives
 					files={relativeFilesAsync.data}
 					hasIndent
@@ -199,7 +195,7 @@ function FileNode({ file, kind, updateCurrentFile }: FileNodeProps) {
 				/>
 			) : null}
 		</div>
-	)
+	);
 }
 
 function FileRelatives({
@@ -210,28 +206,28 @@ function FileRelatives({
 	updateCurrentFile,
 	hasIndent,
 }: {
-	files: TFile[]
-	kind: 'parent' | 'child'
-	onIndentHover?: (hovered: boolean) => void
-	highlight: boolean
-	updateCurrentFile: () => void
-	hasIndent: boolean
+	files: TFile[];
+	kind: "parent" | "child";
+	onIndentHover?: (hovered: boolean) => void;
+	highlight: boolean;
+	updateCurrentFile: () => void;
+	hasIndent: boolean;
 }) {
 	const onMouseEnter = useCallback(() => {
-		onIndentHover?.(true)
-	}, [onIndentHover])
+		onIndentHover?.(true);
+	}, [onIndentHover]);
 
 	const onMouseLeave = useCallback(() => {
-		onIndentHover?.(false)
-	}, [onIndentHover])
+		onIndentHover?.(false);
+	}, [onIndentHover]);
 
 	return (
 		<div className="file-node__relatives">
 			{hasIndent ? (
 				<div
 					className={
-						'file-node__indent ' +
-						(highlight ? 'file-node__indent_highlight' : '')
+						"file-node__indent " +
+						(highlight ? "file-node__indent_highlight" : "")
 					}
 					onMouseEnter={onMouseEnter}
 					onMouseLeave={onMouseLeave}
@@ -249,30 +245,52 @@ function FileRelatives({
 				))}
 			</div>
 		</div>
-	)
+	);
 }
 
 function View() {
-	const ctx = usePluginContext()
+	const ctx = usePluginContext();
 
-	const [file, setFile] = useState<TFile | null>(null)
-	const [key, update] = useState(false)
+	const [file, setFile] = useState<TFile | null>(null);
+	const [key, update] = useState(false);
 
-	const updateCurrentFile = useCallback((file?: TFile) => {
-		setFile(file ?? ctx.app.workspace.getActiveFile())
-		update((x) => !x)
-	}, [])
+	const updateCurrentFile = useCallback(
+		(newFile_?: TFile) => {
+			const newFile = newFile_ ?? ctx.app.workspace.getActiveFile();
+			if (file?.path !== newFile?.path) {
+				setFile(newFile);
+			}
+			update((x) => !x);
+		},
+		[file, setFile, update],
+	);
+
+	const [isAutoRefresh, setAutoRefresh] = useState(false);
+	const toggleAutoRefresh = useCallback(() => {
+		setAutoRefresh((x) => !x);
+		updateCurrentFile();
+	}, [setAutoRefresh]);
+	const isAutoRefreshRef = useRef(isAutoRefresh);
+	isAutoRefreshRef.current = isAutoRefresh;
 
 	useEffect(() => {
-		updateCurrentFile()
-	}, [])
+		ctx.app.workspace.on("active-leaf-change", (leaf) => {
+			if (leaf) {
+				const viewState = leaf.getViewState();
+				if (viewState.type === "markdown" && isAutoRefreshRef.current) {
+					updateCurrentFile();
+				}
+			}
+		});
+		updateCurrentFile();
+	}, []);
 
 	return (
 		<div>
 			<div className="top-panel">
 				<ObsIcon
-					kind="refresh-cw"
-					onClick={() => updateCurrentFile()}
+					kind={isAutoRefresh ? "refresh-cw" : "refresh-cw-off"}
+					onClick={toggleAutoRefresh}
 				/>
 			</div>
 
@@ -284,7 +302,7 @@ function View() {
 				/>
 			) : null}
 		</div>
-	)
+	);
 }
 
-export default View
+export default View;

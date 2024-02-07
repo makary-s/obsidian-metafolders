@@ -1,33 +1,33 @@
-import 'obsidian'
-import { DataviewApi } from '../types'
+import "obsidian";
+import { DataviewApi } from "../types";
 
-declare module 'obsidian' {
+declare module "obsidian" {
 	interface App {
-		appId?: string
+		appId?: string;
 		plugins: {
-			enabledPlugins: Set<string>
+			enabledPlugins: Set<string>;
 			plugins: {
 				dataview?: {
-					api: DataviewApi
-				}
-			}
-		}
+					api: DataviewApi;
+				};
+			};
+		};
 	}
 
 	interface MetadataCache {
 		getBacklinksForFile(file: TFile): {
-			data: Record<string, LinkCache[]>
-		}
+			data: Record<string, LinkCache[]>;
+		};
 	}
 
 	interface LinkCache {
 		/** could contain multiple keys joined with '.' */
-		key?: string
+		key?: string;
 	}
 }
 
 declare global {
 	interface Window {
-		DataviewAPI?: DataviewApi
+		DataviewAPI?: DataviewApi;
 	}
 }

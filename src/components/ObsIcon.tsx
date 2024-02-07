@@ -1,27 +1,27 @@
-import React, { MouseEventHandler, useEffect, useRef } from 'react'
-import { setIcon, type IconName } from 'obsidian'
+import React, { MouseEventHandler, useEffect, useRef } from "react";
+import { setIcon, type IconName } from "obsidian";
 
 export const ObsIcon = ({
 	kind,
 	className,
 	onClick,
 }: {
-	kind: IconName
-	className?: string
-	onClick?: MouseEventHandler<HTMLElement>
+	kind: IconName;
+	className?: string;
+	onClick?: MouseEventHandler<HTMLElement>;
 }) => {
-	const ref = useRef<HTMLSpanElement>(null)
+	const ref = useRef<HTMLSpanElement>(null);
 
 	useEffect(() => {
-		if (ref.current === null) return
-		setIcon(ref.current, kind)
-	}, [kind, ref.current])
+		if (ref.current === null) return;
+		setIcon(ref.current, kind);
+	}, [kind, ref.current]);
 
 	const finalClassName = [
-		'obs-icon',
-		onClick ? 'obs-icon_clickable' : '',
+		"obs-icon",
+		onClick ? "obs-icon_clickable" : "",
 		className,
-	].join(' ')
+	].join(" ");
 
-	return <span ref={ref} className={finalClassName} onClick={onClick} />
-}
+	return <span ref={ref} className={finalClassName} onClick={onClick} />;
+};
