@@ -344,16 +344,18 @@ function View() {
 	return (
 		<div>
 			<div className="top-panel">
-				<ObsIcon
-					disabled={history.offset >= history.files.length}
-					kind={"undo"}
-					onClick={onUndo}
-				/>
-				<ObsIcon
-					disabled={history.offset <= 1}
-					kind={"redo"}
-					onClick={onRedo}
-				/>
+				<div className="top-panel_history">
+					<ObsIcon
+						disabled={history.offset >= history.files.length}
+						kind={"undo"}
+						onClick={onUndo}
+					/>
+					<ObsIcon
+						disabled={history.offset <= 1}
+						kind={"redo"}
+						onClick={onRedo}
+					/>
+				</div>
 				<ObsIcon
 					kind={isAutoRefresh ? "refresh-cw" : "refresh-cw-off"}
 					onClick={toggleAutoRefresh}

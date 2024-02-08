@@ -110,4 +110,10 @@
 	align-items: center;
 	margin-bottom: 4px;
 	color: var(--text-muted);
+	gap: 8px;
+}
+
+.top-panel_history {
+	display: flex;
+	flex-direction: row;
 }
