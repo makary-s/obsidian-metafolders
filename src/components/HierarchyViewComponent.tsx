@@ -165,6 +165,9 @@ function FileNode({ file, kind, updateCurrentFile, depth }: FileNodeProps) {
 						onClick: toggleExpand,
 					};
 
+	const isPrev =
+		filesData.history.getState().files.at(-2)?.path === file.path;
+
 	return (
 		<div className={`file-node file-node_kind-${kind}`}>
 			<div
@@ -181,7 +184,9 @@ function FileNode({ file, kind, updateCurrentFile, depth }: FileNodeProps) {
 			>
 				<ObsIcon {...expanderIcon} className="file-node__expander" />
 
-				<div>{file.basename}</div>
+				<div>{file.basename} </div>
+				{isPrev ? <ObsIcon disabled kind="history" /> : null}
+				<div className="file-node__content-side"></div>
 			</div>
 
 			{relativeFilesAsync.status === "ready" && expanded ? (
@@ -257,32 +262,50 @@ function View() {
 	const [key, update] = useState(false);
 	const { value: rootFile } = useStore(filesData.rootFile);
 
+	const history = useStore(filesData.history);
+
 	const updateCurrentFile = useCallback(
-		(newFile_?: TFile) => {
+		(newFile_?: TFile, shouldSaveHistory = true) => {
 			const { value: rootFile } = filesData.rootFile.getState();
 
 			const newFile = newFile_ ?? ctx.app.workspace.getActiveFile();
-			if (rootFile?.path !== newFile?.path) {
+			if (newFile && newFile.path !== rootFile?.path) {
 				filesData.rootFile.setState({ value: newFile });
 				update((x) => !x);
+				if (shouldSaveHistory) {
+					filesData.history.setState((s) => {
+						const newFiles = s.files
+							.slice(0, s.files.length + 1 - s.offset)
+							.concat(newFile);
+						if (s.files.length > 20) {
+							newFiles.shift();
+						}
+						return {
+							offset: 1,
+							files: newFiles,
+						};
+					});
+				}
 			}
 		},
 		[update],
 	);
 
-	const [isAutoRefresh, setAutoRefresh] = useState(false);
+	const isAutoRefresh = useStore(filesData.isAutoRefresh);
+
 	const toggleAutoRefresh = useCallback(() => {
-		setAutoRefresh((x) => !x);
+		filesData.isAutoRefresh.setState((x) => !x);
 		updateCurrentFile();
-	}, [setAutoRefresh]);
-	const isAutoRefreshRef = useRef(isAutoRefresh);
-	isAutoRefreshRef.current = isAutoRefresh;
+	}, []);
 
 	useEffect(() => {
 		ctx.app.workspace.on("active-leaf-change", (leaf) => {
 			if (leaf) {
 				const viewState = leaf.getViewState();
-				if (viewState.type === "markdown" && isAutoRefreshRef.current) {
+				if (
+					viewState.type === "markdown" &&
+					filesData.isAutoRefresh.getState()
+				) {
 					updateCurrentFile();
 				}
 			}
@@ -290,9 +313,47 @@ function View() {
 		updateCurrentFile();
 	}, []);
 
+	const onUndo = useCallback(() => {
+		const history = filesData.history.getState();
+
+		const newOffset = history.offset + 1;
+		const previousFile = history.files.at(-newOffset);
+
+		filesData.history.setState((s) => ({
+			...s,
+			offset: newOffset,
+		}));
+
+		updateCurrentFile(previousFile, false);
+	}, []);
+
+	const onRedo = useCallback(() => {
+		const history = filesData.history.getState();
+
+		const newOffset = history.offset - 1;
+		const previousFile = history.files.at(-newOffset);
+
+		filesData.history.setState((s) => ({
+			...s,
+			offset: newOffset,
+		}));
+
+		updateCurrentFile(previousFile, false);
+	}, []);
+
 	return (
 		<div>
 			<div className="top-panel">
+				<ObsIcon
+					disabled={history.offset >= history.files.length}
+					kind={"undo"}
+					onClick={onUndo}
+				/>
+				<ObsIcon
+					disabled={history.offset <= 1}
+					kind={"redo"}
+					onClick={onRedo}
+				/>
 				<ObsIcon
 					kind={isAutoRefresh ? "refresh-cw" : "refresh-cw-off"}
 					onClick={toggleAutoRefresh}

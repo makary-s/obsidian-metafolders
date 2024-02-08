@@ -1,16 +1,17 @@
 import React, { MouseEventHandler, useEffect, useRef } from "react";
 import { setIcon, type IconName } from "obsidian";
 
-export const ObsIcon = ({
-	kind,
-	className,
-	onClick,
-}: {
+export const ObsIcon = (props: {
 	kind: IconName;
+	disabled?: boolean;
 	className?: string;
+	size?: "s" | "m" | "xl";
 	onClick?: MouseEventHandler<HTMLElement>;
 }) => {
-	const ref = useRef<HTMLSpanElement>(null);
+	const { kind, className, disabled, size } = props;
+	const onClick = disabled ? undefined : props.onClick;
+
+	const ref = useRef<HTMLElement>(null);
 
 	useEffect(() => {
 		if (ref.current === null) return;
@@ -20,6 +21,8 @@ export const ObsIcon = ({
 	const finalClassName = [
 		"obs-icon",
 		onClick ? "obs-icon_clickable" : "",
+		disabled ? "obs-icon_disabled" : "",
+		size ? `obs-icon_size-${size}` : "",
 		className,
 	].join(" ");
 
