@@ -11,7 +11,7 @@ import { getChildFiles, getParentFiles } from "../utils/hierarchyBuilder";
 import { TFile } from "obsidian";
 import { useMemoAsync } from "../hooks/useMemoAsync";
 import { ObsIcon } from "./ObsIcon";
-import { appState, filesData } from "src/state";
+import { filesData } from "src/state";
 
 type BaseFileNodeProps = {
 	file: TFile;
@@ -254,17 +254,16 @@ function FileRelatives({
 
 function View() {
 	const ctx = usePluginContext();
-
 	const [key, update] = useState(false);
-	const rootFile = useStore(appState, (s) => s.rootFile);
+	const { value: rootFile } = useStore(filesData.rootFile);
 
 	const updateCurrentFile = useCallback(
 		(newFile_?: TFile) => {
-			const { rootFile } = appState.getState();
+			const { value: rootFile } = filesData.rootFile.getState();
 
 			const newFile = newFile_ ?? ctx.app.workspace.getActiveFile();
 			if (rootFile?.path !== newFile?.path) {
-				appState.setState((s) => ({ ...s, rootFile: newFile }));
+				filesData.rootFile.setState({ value: newFile });
 				update((x) => !x);
 			}
 		},
