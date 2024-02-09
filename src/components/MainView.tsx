@@ -12,14 +12,110 @@ import { useMemoAsync } from "../hooks/useMemoAsync";
 import { ObsIcon } from "./ObsIcon";
 import { filesData } from "src/state";
 import { useUpdateCurrentFile } from "src/hooks/useUpdateCurrentFile";
+import { checkHasMetaLink } from "src/utils/obsidian";
 
+type NodeKind = "child" | "parent";
 type BaseFileNodeProps = {
 	file: TFile;
 };
 
 type FileNodeProps = BaseFileNodeProps & {
-	kind: "child" | "parent";
+	kind: NodeKind;
 	depth: number;
+};
+
+const NodeContent = ({
+	file,
+	kind,
+	depth,
+	icon,
+	onIconClick,
+	onClick,
+}: {
+	file: TFile;
+	kind: NodeKind | "root";
+	depth: number;
+	icon?: string;
+	onIconClick?: MouseEventHandler<HTMLElement>;
+	onClick: MouseEventHandler<HTMLElement>;
+}) => {
+	const ctx = usePluginContext();
+
+	const [highlighted, setHighlighted] = filesData.highlighted.useStore(
+		file.path,
+	);
+
+	const toggleLink: MouseEventHandler<HTMLElement> = useCallback((e) => {
+		e.stopPropagation();
+
+		const currentFile = ctx.app.workspace.getActiveFile();
+
+		if (!currentFile || currentFile.path === file.path) return;
+
+		ctx.app.fileManager.processFrontMatter(currentFile, (frontMatter) => {
+			const isLinked = checkHasMetaLink(ctx, currentFile, file.basename);
+			const newValue = `[[${file.basename}]]`;
+			if (isLinked) {
+				const index =
+					frontMatter[ctx.settings.parentPropName].indexOf(newValue);
+				if (index < 0) return;
+
+				frontMatter[ctx.settings.parentPropName].splice(index, 1);
+			} else if (frontMatter[ctx.settings.parentPropName]) {
+				frontMatter[ctx.settings.parentPropName] ??= [];
+
+				frontMatter[ctx.settings.parentPropName].push(newValue);
+			}
+		});
+	}, []);
+
+	const currentFile = ctx.app.workspace.getActiveFile();
+
+	const isCurrent = currentFile?.path === file.path;
+
+	const isLinked = currentFile
+		? checkHasMetaLink(ctx, currentFile, file.basename)
+		: false;
+
+	const isPrev =
+		filesData.history.getState().files.at(-2)?.path === file.path;
+
+	return (
+		<div
+			className={[
+				"file-node__container",
+				highlighted ? "file-node__container_highlight" : "",
+				`file-node__container_kind-${kind}`,
+				depth === 0 ? "" : "file-node__container_indented",
+			]
+				.filter(Boolean)
+				.join(" ")}
+			onClick={onClick}
+			onMouseEnter={() => setHighlighted(true)}
+			onMouseLeave={() => setHighlighted(false)}
+		>
+			{icon && (
+				<ObsIcon
+					kind={icon}
+					onClick={onIconClick}
+					size="xs"
+					className="file-node__expander"
+				/>
+			)}
+
+			<div className="file-node__content">{file.basename}</div>
+			{isPrev ? <ObsIcon size="s" disabled kind="history" /> : null}
+			<div className="file-node__content-side">
+				{!isCurrent && (
+					<ObsIcon
+						kind={isLinked ? "unlink" : "link"}
+						onClick={toggleLink}
+						size="xs"
+					/>
+				)}
+			</div>
+		</div>
+	);
 };
 
 function RootFileNode({ file }: BaseFileNodeProps) {
@@ -70,20 +166,12 @@ function RootFileNode({ file }: BaseFileNodeProps) {
 				depth={0}
 			/>
 
-			<div
-				className={[
-					"file-node__container",
-					highlighted ? "file-node__container_highlight" : "",
-					`file-node__container_kind-root`,
-				]
-					.filter(Boolean)
-					.join(" ")}
+			<NodeContent
+				depth={0}
+				file={file}
+				kind={"root"}
 				onClick={onClick}
-				onMouseEnter={() => setHighlighted(true)}
-				onMouseLeave={() => setHighlighted(false)}
-			>
-				<div>{file.basename}</div>
-			</div>
+			/>
 
 			<FileRelatives
 				files={childFilesAsync.data}
@@ -164,35 +252,16 @@ function FileNode({ file, kind, depth }: FileNodeProps) {
 						onClick: toggleExpand,
 					};
 
-	const isPrev =
-		filesData.history.getState().files.at(-2)?.path === file.path;
-
 	return (
 		<div className={`file-node file-node_kind-${kind}`}>
-			<div
-				className={[
-					"file-node__container",
-					highlighted ? "file-node__container_highlight" : "",
-					`file-node__container_kind-${kind}`,
-					depth === 0 ? "" : "file-node__container_indented",
-				]
-					.filter(Boolean)
-					.join(" ")}
+			<NodeContent
+				depth={depth}
+				file={file}
+				icon={expanderIcon.kind}
+				onIconClick={expanderIcon.onClick}
+				kind={kind}
 				onClick={onClick}
-				onMouseEnter={() => setHighlighted(true)}
-				onMouseLeave={() => setHighlighted(false)}
-			>
-				<ObsIcon
-					{...expanderIcon}
-					size="xs"
-					className="file-node__expander"
-				/>
-
-				<div className="file-node__content">{file.basename}</div>
-				{isPrev ? <ObsIcon size="s" disabled kind="history" /> : null}
-				<div className="file-node__content-side"></div>
-			</div>
-
+			/>
 			{relativeFilesAsync.status === "ready" && expanded ? (
 				<FileRelatives
 					files={relativeFilesAsync.data}
@@ -216,7 +285,7 @@ function FileRelatives({
 	depth,
 }: {
 	files: TFile[];
-	kind: "parent" | "child";
+	kind: NodeKind;
 	onIndentHover?: (hovered: boolean) => void;
 	highlight: boolean;
 	hasIndent: boolean;

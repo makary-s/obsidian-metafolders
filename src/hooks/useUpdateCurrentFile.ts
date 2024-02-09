@@ -12,7 +12,6 @@ export const useUpdateCurrentFile = () => {
 		const newFile = newFile_ ?? ctx.app.workspace.getActiveFile();
 		if (newFile && newFile.path !== rootFile?.path) {
 			filesData.rootFile.setState({ value: newFile });
-			// update((x) => !x);
 			if (shouldSaveHistory) {
 				filesData.history.setState((s) => {
 					const newFiles = s.files
