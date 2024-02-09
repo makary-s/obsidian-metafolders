@@ -175,6 +175,7 @@ function FileNode({ file, kind, updateCurrentFile, depth }: FileNodeProps) {
 					"file-node__container",
 					highlighted ? "file-node__container_highlight" : "",
 					`file-node__container_kind-${kind}`,
+					depth === 0 ? "" : "file-node__container_indented",
 				]
 					.filter(Boolean)
 					.join(" ")}
@@ -182,10 +183,14 @@ function FileNode({ file, kind, updateCurrentFile, depth }: FileNodeProps) {
 				onMouseEnter={() => setHighlighted(true)}
 				onMouseLeave={() => setHighlighted(false)}
 			>
-				<ObsIcon {...expanderIcon} className="file-node__expander" />
+				<ObsIcon
+					{...expanderIcon}
+					size="s"
+					className="file-node__expander"
+				/>
 
-				<div>{file.basename} </div>
-				{isPrev ? <ObsIcon disabled kind="history" /> : null}
+				<div className="file-node__content">{file.basename}</div>
+				{isPrev ? <ObsIcon size="s" disabled kind="history" /> : null}
 				<div className="file-node__content-side"></div>
 			</div>
 
@@ -348,16 +353,19 @@ function View() {
 					<ObsIcon
 						disabled={history.offset >= history.files.length}
 						kind={"undo"}
+						size="s"
 						onClick={onUndo}
 					/>
 					<ObsIcon
 						disabled={history.offset <= 1}
 						kind={"redo"}
+						size="s"
 						onClick={onRedo}
 					/>
 				</div>
 				<ObsIcon
 					kind={isAutoRefresh ? "refresh-cw" : "refresh-cw-off"}
+					size="s"
 					onClick={toggleAutoRefresh}
 				/>
 			</div>

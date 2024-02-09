@@ -1,4 +1,11 @@
-import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
+import {
+	App,
+	Plugin,
+	PluginSettingTab,
+	Setting,
+	WorkspaceLeaf,
+} from "obsidian";
+import { PLUGIN_ICON_NAME, PLUGIN_TITLE, PLUGIN_VIEW_ID } from "src/constants";
 import { PluginSettings } from "src/types";
 import HierarchyView from "src/view";
 
@@ -13,23 +20,31 @@ export default class HierarchyViewPlugin extends Plugin {
 		await this.loadSettings();
 
 		this.registerView(
-			"hierarchy-view",
+			PLUGIN_VIEW_ID,
 			(leaf) => new HierarchyView(leaf, this.settings),
 		);
 
-		this.addRibbonIcon("dice", "Metafolders", () => {
+		this.addRibbonIcon(PLUGIN_ICON_NAME, PLUGIN_TITLE, () => {
 			this.activateView();
 		});
 
 		this.addSettingTab(new SettingTab(this.app, this));
 	}
 
-	activateView() {
-		this.app.workspace.detachLeavesOfType("hierarchy-view");
-		this.app.workspace.getLeftLeaf(false).setViewState({
-			type: "hierarchy-view",
-			active: true,
-		});
+	async activateView() {
+		const { workspace } = this.app;
+
+		let leaf: WorkspaceLeaf | null = null;
+		const leaves = workspace.getLeavesOfType(PLUGIN_VIEW_ID);
+
+		if (leaves.length > 0) {
+			leaf = leaves[0];
+		} else {
+			leaf = workspace.getLeftLeaf(false);
+			await leaf.setViewState({ type: PLUGIN_VIEW_ID, active: true });
+		}
+
+		workspace.revealLeaf(leaf);
 	}
 
 	async loadSettings() {

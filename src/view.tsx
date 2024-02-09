@@ -5,10 +5,13 @@ import HierarchyViewComponent from "./components/HierarchyViewComponent";
 import { AppContext } from "./hooks/appContext";
 import { PluginSettings } from "./types";
 import { getAPI } from "obsidian-dataview";
+import { PLUGIN_ICON_NAME, PLUGIN_TITLE, PLUGIN_VIEW_ID } from "./constants";
 
 export default class HierarchyView extends ItemView {
 	root: Root | null = null;
 	settings: PluginSettings;
+	navigation = false;
+	icon = PLUGIN_ICON_NAME;
 
 	constructor(leaf: WorkspaceLeaf, settings: PluginSettings) {
 		super(leaf);
@@ -16,16 +19,17 @@ export default class HierarchyView extends ItemView {
 	}
 
 	getViewType() {
-		return "hierarchy-view";
+		return PLUGIN_VIEW_ID;
 	}
 
 	getDisplayText() {
-		return "Hierarchy View";
+		return PLUGIN_TITLE;
 	}
 
 	async onOpen() {
 		this.root = createRoot(this.containerEl.children[1]);
 
+		console.log(this.containerEl);
 		const dv = getAPI(this.app);
 		if (!dv) {
 			this.root.render(<div>dataview is required</div>);
