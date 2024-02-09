@@ -3,7 +3,6 @@ import React, {
 	useCallback,
 	useEffect,
 	useRef,
-	useState,
 } from "react";
 import { useStore } from "zustand";
 import { usePluginContext } from "../hooks/appContext";
@@ -12,10 +11,10 @@ import { TFile } from "obsidian";
 import { useMemoAsync } from "../hooks/useMemoAsync";
 import { ObsIcon } from "./ObsIcon";
 import { filesData } from "src/state";
+import { useUpdateCurrentFile } from "src/hooks/useUpdateCurrentFile";
 
 type BaseFileNodeProps = {
 	file: TFile;
-	updateCurrentFile: (file?: TFile) => void;
 };
 
 type FileNodeProps = BaseFileNodeProps & {
@@ -23,8 +22,9 @@ type FileNodeProps = BaseFileNodeProps & {
 	depth: number;
 };
 
-function RootFileNode({ file, updateCurrentFile }: BaseFileNodeProps) {
+function RootFileNode({ file }: BaseFileNodeProps) {
 	const ctx = usePluginContext();
+	const updateCurrentFile = useUpdateCurrentFile();
 
 	const [highlighted, setHighlighted] = filesData.highlighted.useStore(
 		file.path,
@@ -67,7 +67,6 @@ function RootFileNode({ file, updateCurrentFile }: BaseFileNodeProps) {
 				highlight={highlighted}
 				kind="parent"
 				onIndentHover={setHighlighted}
-				updateCurrentFile={updateCurrentFile}
 				depth={0}
 			/>
 
@@ -92,15 +91,15 @@ function RootFileNode({ file, updateCurrentFile }: BaseFileNodeProps) {
 				highlight={highlighted}
 				kind="child"
 				onIndentHover={setHighlighted}
-				updateCurrentFile={updateCurrentFile}
 				depth={0}
 			/>
 		</div>
 	);
 }
 
-function FileNode({ file, kind, updateCurrentFile, depth }: FileNodeProps) {
+function FileNode({ file, kind, depth }: FileNodeProps) {
 	const ctx = usePluginContext();
+	const updateCurrentFile = useUpdateCurrentFile();
 	const clickCount = useRef({ count: 0, timestamp: -1 });
 
 	const [highlighted, setHighlighted] = filesData.highlighted.useStore(
@@ -185,7 +184,7 @@ function FileNode({ file, kind, updateCurrentFile, depth }: FileNodeProps) {
 			>
 				<ObsIcon
 					{...expanderIcon}
-					size="s"
+					size="xs"
 					className="file-node__expander"
 				/>
 
@@ -201,7 +200,6 @@ function FileNode({ file, kind, updateCurrentFile, depth }: FileNodeProps) {
 					highlight={highlighted}
 					kind={kind}
 					onIndentHover={setHighlighted}
-					updateCurrentFile={updateCurrentFile}
 					depth={depth + 1}
 				/>
 			) : null}
@@ -214,7 +212,6 @@ function FileRelatives({
 	kind,
 	onIndentHover,
 	highlight,
-	updateCurrentFile,
 	hasIndent,
 	depth,
 }: {
@@ -222,7 +219,6 @@ function FileRelatives({
 	kind: "parent" | "child";
 	onIndentHover?: (hovered: boolean) => void;
 	highlight: boolean;
-	updateCurrentFile: () => void;
 	hasIndent: boolean;
 	depth: number;
 }) {
@@ -253,7 +249,6 @@ function FileRelatives({
 						file={child}
 						key={child.path}
 						kind={kind}
-						updateCurrentFile={updateCurrentFile}
 						depth={depth}
 					/>
 				))}
@@ -262,46 +257,11 @@ function FileRelatives({
 	);
 }
 
-function View() {
+export const MainView = () => {
 	const ctx = usePluginContext();
-	const [key, update] = useState(false);
 	const { value: rootFile } = useStore(filesData.rootFile);
 
-	const history = useStore(filesData.history);
-
-	const updateCurrentFile = useCallback(
-		(newFile_?: TFile, shouldSaveHistory = true) => {
-			const { value: rootFile } = filesData.rootFile.getState();
-
-			const newFile = newFile_ ?? ctx.app.workspace.getActiveFile();
-			if (newFile && newFile.path !== rootFile?.path) {
-				filesData.rootFile.setState({ value: newFile });
-				update((x) => !x);
-				if (shouldSaveHistory) {
-					filesData.history.setState((s) => {
-						const newFiles = s.files
-							.slice(0, s.files.length + 1 - s.offset)
-							.concat(newFile);
-						if (s.files.length > 20) {
-							newFiles.shift();
-						}
-						return {
-							offset: 1,
-							files: newFiles,
-						};
-					});
-				}
-			}
-		},
-		[update],
-	);
-
-	const isAutoRefresh = useStore(filesData.isAutoRefresh);
-
-	const toggleAutoRefresh = useCallback(() => {
-		filesData.isAutoRefresh.setState((x) => !x);
-		updateCurrentFile();
-	}, []);
+	const updateCurrentFile = useUpdateCurrentFile();
 
 	useEffect(() => {
 		ctx.app.workspace.on("active-leaf-change", (leaf) => {
@@ -316,69 +276,9 @@ function View() {
 			}
 		});
 		updateCurrentFile();
-	}, []);
+	}, [updateCurrentFile]);
 
-	const onUndo = useCallback(() => {
-		const history = filesData.history.getState();
+	if (!rootFile) return null;
 
-		const newOffset = history.offset + 1;
-		const previousFile = history.files.at(-newOffset);
-
-		filesData.history.setState((s) => ({
-			...s,
-			offset: newOffset,
-		}));
-
-		updateCurrentFile(previousFile, false);
-	}, []);
-
-	const onRedo = useCallback(() => {
-		const history = filesData.history.getState();
-
-		const newOffset = history.offset - 1;
-		const previousFile = history.files.at(-newOffset);
-
-		filesData.history.setState((s) => ({
-			...s,
-			offset: newOffset,
-		}));
-
-		updateCurrentFile(previousFile, false);
-	}, []);
-
-	return (
-		<div>
-			<div className="top-panel">
-				<div className="top-panel_history">
-					<ObsIcon
-						disabled={history.offset >= history.files.length}
-						kind={"undo"}
-						size="s"
-						onClick={onUndo}
-					/>
-					<ObsIcon
-						disabled={history.offset <= 1}
-						kind={"redo"}
-						size="s"
-						onClick={onRedo}
-					/>
-				</div>
-				<ObsIcon
-					kind={isAutoRefresh ? "refresh-cw" : "refresh-cw-off"}
-					size="s"
-					onClick={toggleAutoRefresh}
-				/>
-			</div>
-
-			{rootFile ? (
-				<RootFileNode
-					file={rootFile}
-					key={rootFile.path + key}
-					updateCurrentFile={updateCurrentFile}
-				/>
-			) : null}
-		</div>
-	);
-}
-
-export default View;
+	return <RootFileNode file={rootFile} />;
+};

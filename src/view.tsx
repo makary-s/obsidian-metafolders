@@ -1,7 +1,8 @@
 import { Root, createRoot } from "react-dom/client";
 import React from "react";
 import { ItemView, WorkspaceLeaf } from "obsidian";
-import HierarchyViewComponent from "./components/HierarchyViewComponent";
+import { MainView } from "./components/MainView";
+import { TopBar } from "./components/TopBar";
 import { AppContext } from "./hooks/appContext";
 import { PluginSettings } from "./types";
 import { getAPI } from "obsidian-dataview";
@@ -9,6 +10,7 @@ import { PLUGIN_ICON_NAME, PLUGIN_TITLE, PLUGIN_VIEW_ID } from "./constants";
 
 export default class HierarchyView extends ItemView {
 	root: Root | null = null;
+	headerRoot: Root | null = null;
 	settings: PluginSettings;
 	navigation = false;
 	icon = PLUGIN_ICON_NAME;
@@ -29,7 +31,10 @@ export default class HierarchyView extends ItemView {
 	async onOpen() {
 		this.root = createRoot(this.containerEl.children[1]);
 
-		console.log(this.containerEl);
+		const headerEl = document.createElement("div");
+		this.headerRoot = createRoot(headerEl);
+		this.containerEl.prepend(headerEl);
+
 		const dv = getAPI(this.app);
 		if (!dv) {
 			this.root.render(<div>dataview is required</div>);
@@ -40,12 +45,19 @@ export default class HierarchyView extends ItemView {
 
 		this.root.render(
 			<AppContext.Provider value={ctx}>
-				<HierarchyViewComponent />
+				<MainView />
+			</AppContext.Provider>,
+		);
+
+		this.headerRoot.render(
+			<AppContext.Provider value={ctx}>
+				<TopBar />
 			</AppContext.Provider>,
 		);
 	}
 
 	async onClose() {
 		this.root?.unmount();
+		this.headerRoot?.unmount();
 	}
 }

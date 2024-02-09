@@ -5,7 +5,7 @@ export const ObsIcon = (props: {
 	kind: IconName;
 	disabled?: boolean;
 	className?: string;
-	size?: "s" | "m" | "xl";
+	size?: "xs" | "s" | "m" | "xl";
 	onClick?: MouseEventHandler<HTMLElement>;
 }) => {
 	const { kind, className, disabled, size } = props;
