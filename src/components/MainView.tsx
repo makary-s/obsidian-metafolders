@@ -3,6 +3,7 @@ import React, {
 	useCallback,
 	useEffect,
 	useRef,
+	useState,
 } from "react";
 import { useStore } from "zustand";
 import { usePluginContext } from "../hooks/appContext";
@@ -28,22 +29,43 @@ const NodeContent = ({
 	file,
 	kind,
 	depth,
-	icon,
-	onIconClick,
+	expanded,
+	hasChildren,
+	toggleExpand,
 	onClick,
 }: {
 	file: TFile;
 	kind: NodeKind | "root";
 	depth: number;
-	icon?: string;
-	onIconClick?: MouseEventHandler<HTMLElement>;
+	hasChildren?: boolean;
+	expanded?: boolean;
+	toggleExpand?: MouseEventHandler<HTMLElement>;
 	onClick: MouseEventHandler<HTMLElement>;
 }) => {
 	const ctx = usePluginContext();
 
+	const expanderIcon = hasChildren
+		? {
+				kind: "chevron-right",
+				className: expanded ? "file-node__expander_expanded" : "",
+				onClick: toggleExpand,
+			}
+		: { kind: "dot" };
+
 	const [highlighted, setHighlighted] = filesData.highlighted.useStore(
 		file.path,
 	);
+
+	const currentFile = ctx.app.workspace.getActiveFile();
+
+	const isLinked = currentFile
+		? checkHasMetaLink(ctx, currentFile, file.basename)
+		: false;
+	const [linkIcon, setLinkIcon] = useState(isLinked ? "unlink" : "link");
+
+	useEffect(() => {
+		setLinkIcon(isLinked ? "unlink" : "link");
+	}, [highlighted, isLinked]);
 
 	const toggleLink: MouseEventHandler<HTMLElement> = useCallback((e) => {
 		e.stopPropagation();
@@ -61,21 +83,17 @@ const NodeContent = ({
 				if (index < 0) return;
 
 				frontMatter[ctx.settings.parentPropName].splice(index, 1);
+				setLinkIcon("link");
 			} else if (frontMatter[ctx.settings.parentPropName]) {
 				frontMatter[ctx.settings.parentPropName] ??= [];
 
 				frontMatter[ctx.settings.parentPropName].push(newValue);
+				setLinkIcon("unlink");
 			}
 		});
 	}, []);
 
-	const currentFile = ctx.app.workspace.getActiveFile();
-
 	const isCurrent = currentFile?.path === file.path;
-
-	const isLinked = currentFile
-		? checkHasMetaLink(ctx, currentFile, file.basename)
-		: false;
 
 	const isPrev =
 		filesData.history.getState().files.at(-2)?.path === file.path;
@@ -94,12 +112,15 @@ const NodeContent = ({
 			onMouseEnter={() => setHighlighted(true)}
 			onMouseLeave={() => setHighlighted(false)}
 		>
-			{icon && (
+			{hasChildren !== undefined && (
 				<ObsIcon
-					kind={icon}
-					onClick={onIconClick}
+					kind={expanderIcon.kind}
+					onClick={expanderIcon.onClick}
 					size="xs"
-					className="file-node__expander"
+					className={[
+						"file-node__expander",
+						expanderIcon.className ?? "",
+					].join(" ")}
 				/>
 			)}
 
@@ -107,11 +128,7 @@ const NodeContent = ({
 			{isPrev ? <ObsIcon size="s" disabled kind="history" /> : null}
 			<div className="file-node__content-side">
 				{!isCurrent && (
-					<ObsIcon
-						kind={isLinked ? "unlink" : "link"}
-						onClick={toggleLink}
-						size="xs"
-					/>
+					<ObsIcon kind={linkIcon} onClick={toggleLink} size="xs" />
 				)}
 			</div>
 		</div>
@@ -164,6 +181,7 @@ function RootFileNode({ file }: BaseFileNodeProps) {
 				kind="parent"
 				onIndentHover={setHighlighted}
 				depth={0}
+				expanded
 			/>
 
 			<NodeContent
@@ -180,6 +198,7 @@ function RootFileNode({ file }: BaseFileNodeProps) {
 				kind="child"
 				onIndentHover={setHighlighted}
 				depth={0}
+				expanded
 			/>
 		</div>
 	);
@@ -238,31 +257,22 @@ function FileNode({ file, kind, depth }: FileNodeProps) {
 		}
 	}, [kind, file, ctx]);
 
-	const expanderIcon =
-		relativeFilesAsync.status === "loading"
-			? { kind: "dot" }
-			: relativeFilesAsync.data.length === 0
-				? { kind: "dot" }
-				: {
-						kind: expanded
-							? kind === "child"
-								? "chevron-down"
-								: "chevron-up"
-							: "chevron-right",
-						onClick: toggleExpand,
-					};
+	const hasChildren =
+		relativeFilesAsync.status !== "loading" &&
+		relativeFilesAsync.data.length !== 0;
 
 	return (
 		<div className={`file-node file-node_kind-${kind}`}>
 			<NodeContent
 				depth={depth}
 				file={file}
-				icon={expanderIcon.kind}
-				onIconClick={expanderIcon.onClick}
 				kind={kind}
 				onClick={onClick}
+				hasChildren={hasChildren}
+				expanded={expanded}
+				toggleExpand={toggleExpand}
 			/>
-			{relativeFilesAsync.status === "ready" && expanded ? (
+			{relativeFilesAsync.status === "ready" ? (
 				<FileRelatives
 					files={relativeFilesAsync.data}
 					hasIndent
@@ -270,6 +280,7 @@ function FileNode({ file, kind, depth }: FileNodeProps) {
 					kind={kind}
 					onIndentHover={setHighlighted}
 					depth={depth + 1}
+					expanded={expanded}
 				/>
 			) : null}
 		</div>
@@ -283,6 +294,7 @@ function FileRelatives({
 	highlight,
 	hasIndent,
 	depth,
+	expanded,
 }: {
 	files: TFile[];
 	kind: NodeKind;
@@ -290,6 +302,7 @@ function FileRelatives({
 	highlight: boolean;
 	hasIndent: boolean;
 	depth: number;
+	expanded: boolean;
 }) {
 	const onMouseEnter = useCallback(() => {
 		onIndentHover?.(true);
@@ -299,8 +312,27 @@ function FileRelatives({
 		onIndentHover?.(false);
 	}, [onIndentHover]);
 
+	const containerRef = useRef<HTMLDivElement>(null);
+
+	const [marginTop, setMarginTop] = useState(expanded ? "0" : "-100vh"); // TODO collapsed initial value
+
+	useEffect(() => {
+		setMarginTop(
+			expanded
+				? "0"
+				: containerRef.current === null
+					? "-1000px"
+					: `-${containerRef.current.scrollHeight}px`,
+		);
+	}, [expanded]);
+
 	return (
-		<div className="file-node__relatives">
+		<div
+			className={[
+				"file-node__relatives",
+				expanded ? "" : "file-node__relatives_hidden",
+			].join(" ")}
+		>
 			{hasIndent ? (
 				<div
 					className={
@@ -312,15 +344,23 @@ function FileRelatives({
 				/>
 			) : null}
 
-			<div className="file-node__relatives-container">
-				{files.map((child) => (
-					<FileNode
-						file={child}
-						key={child.path}
-						kind={kind}
-						depth={depth}
-					/>
-				))}
+			<div className="file-node__relatives-overflow-wrapper">
+				<div
+					className="file-node__relatives-container"
+					ref={containerRef}
+					style={{
+						marginTop: marginTop,
+					}}
+				>
+					{files.map((child) => (
+						<FileNode
+							file={child}
+							key={child.path}
+							kind={kind}
+							depth={depth}
+						/>
+					))}
+				</div>
 			</div>
 		</div>
 	);
@@ -349,5 +389,5 @@ export const MainView = () => {
 
 	if (!rootFile) return null;
 
-	return <RootFileNode file={rootFile} />;
+	return <RootFileNode file={rootFile} key={rootFile.path} />;
 };

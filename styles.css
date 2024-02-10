@@ -30,25 +30,33 @@
 .obs-icon_size-xs svg {
 	height: var(--icon-xs);
 	width: var(--icon-xs);
+	stroke-width: var(--icon-xs-stroke-width);
 }
 .obs-icon_size-s svg {
 	height: var(--icon-s);
 	width: var(--icon-s);
+	stroke-width: var(--icon-s-stroke-width);
 }
 
 .obs-icon_size-m svg {
 	height: var(--icon-m);
 	width: var(--icon-m);
+	stroke-width: var(--icon-m-stroke-width);
 }
 
 .obs-icon_size-xl svg {
 	height: var(--icon-xl);
 	width: var(--icon-xl);
+	stroke-width: var(--icon-xl-stroke-width);
 }
 
 .file-node {
 	display: flex;
 	flex-direction: column;
+}
+
+.file-node_kind-parent {
+	flex-direction: column-reverse;
 }
 
 .file-node_kind-parent {
@@ -62,7 +70,7 @@
 .file-node__container {
 	display: flex;
 	flex-direction: row;
-	padding: var(--size-2-2);
+	padding: 0 var(--size-2-2);
 	margin-left: 0px;
 	transition: all 300ms;
 	gap: var(--size-2-2);
@@ -72,6 +80,8 @@
 	cursor: var(--cursor-link);
 
 	border-radius: var(--radius-s);
+
+	height: var(--size-4-8);
 }
 
 .file-node__container_indented {
@@ -82,7 +92,7 @@
 	font-weight: var(--font-semibold);
 	font-size: var(--font-ui-small);
 	border-radius: var(--radius-s);
-	padding: var(--size-4-2) var(--size-4-3);
+	padding-left: var(--size-4-3);
 	padding-right: var(--size-4-1);
 	background-color: var(--background-primary);
 	box-shadow: 0 0 0 var(--border-width) var(--background-modifier-border);
@@ -115,11 +125,18 @@
 	flex-direction: row;
 }
 
+.file-node__relatives-overflow-wrapper {
+	overflow: hidden;
+	width: 100%;
+}
+
 .file-node__relatives-container {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
 	font-size: var(--font-ui-small);
+
+	transition: margin-top 100ms;
 }
 
 .file-node__indent {
@@ -134,6 +151,20 @@
 
 .file-node__indent_highlight {
 	border-color: var(--background-modifier-border-hover);
+}
+
+.file-node__expander svg {
+	stroke-width: calc(var(--icon-xs-stroke-width) * 1.5);
+	color: var(--nav-collapse-icon-color);
+	transition: transform 100ms;
+}
+
+.file-node__container_kind-parent .file-node__expander_expanded svg {
+	transform: rotate(-90deg);
+}
+
+.file-node__container_kind-child .file-node__expander_expanded svg {
+	transform: rotate(90deg);
 }
 
 .top-panel {
