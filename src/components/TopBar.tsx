@@ -2,10 +2,10 @@ import React, { useCallback } from "react";
 import { ObsIcon } from "../baseComponents/ObsIcon";
 import { filesData } from "../state";
 import { useStore } from "zustand";
-import { useUpdateCurrentFile } from "../hooks/useUpdateCurrentFile";
+import { useUpdateRootFile } from "../hooks/useUpdateRootFile";
 
 const useProps = () => {
-	const updateCurrentFile = useUpdateCurrentFile();
+	const updateCurrentFile = useUpdateRootFile();
 
 	const toggleAutoRefresh = useCallback(() => {
 		filesData.isAutoRefresh.setState((x) => !x);

@@ -92,7 +92,6 @@
 	font-weight: var(--font-semibold);
 	font-size: var(--font-ui-small);
 	border-radius: var(--radius-s);
-	padding-left: var(--size-4-3);
 	padding-right: var(--size-4-1);
 	background-color: var(--background-primary);
 	box-shadow: 0 0 0 var(--border-width) var(--background-modifier-border);

@@ -2,14 +2,14 @@ import React, { useEffect } from "react";
 import { useStore } from "zustand";
 import { usePluginContext } from "../hooks/appContext";
 import { filesData } from "src/state";
-import { useUpdateCurrentFile } from "src/hooks/useUpdateCurrentFile";
+import { useUpdateRootFile } from "src/hooks/useUpdateRootFile";
 import { RootFileNode } from "./FileNode/RootFileNode";
 
 export const MainView = () => {
 	const ctx = usePluginContext();
 	const { value: rootFile } = useStore(filesData.rootFile);
 
-	const updateCurrentFile = useUpdateCurrentFile();
+	const updateRootFile = useUpdateRootFile();
 
 	useEffect(() => {
 		ctx.app.workspace.on("active-leaf-change", (leaf) => {
@@ -19,12 +19,12 @@ export const MainView = () => {
 					viewState.type === "markdown" &&
 					filesData.isAutoRefresh.getState()
 				) {
-					updateCurrentFile();
+					updateRootFile();
 				}
 			}
 		});
-		updateCurrentFile();
-	}, [updateCurrentFile]);
+		updateRootFile();
+	}, [updateRootFile]);
 
 	if (!rootFile) return null;
 

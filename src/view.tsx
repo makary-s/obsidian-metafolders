@@ -4,9 +4,10 @@ import { ItemView, WorkspaceLeaf } from "obsidian";
 import { MainView } from "./components/MainView";
 import { TopBar } from "./components/TopBar";
 import { AppContext } from "./hooks/appContext";
-import { PluginSettings } from "./types";
 import { getAPI } from "obsidian-dataview";
 import { PLUGIN_ICON_NAME, PLUGIN_TITLE, PLUGIN_VIEW_ID } from "./constants";
+import { PluginContext } from "./context";
+import { PluginSettings } from "./types";
 
 export default class HierarchyView extends ItemView {
 	root: Root | null = null;
@@ -41,7 +42,21 @@ export default class HierarchyView extends ItemView {
 			return;
 		}
 
-		const ctx = { app: this.app, dv, settings: this.settings };
+		const ctx = new PluginContext({
+			app: this.app,
+			settings: this.settings,
+		});
+
+		this.app.workspace.on("active-leaf-change", (leaf) => {
+			if (leaf === null) return;
+
+			const viewState = leaf.getViewState();
+
+			if (viewState.type === "markdown") {
+				const newFile = ctx.app.workspace.getActiveFile();
+				ctx.currentFile.update(newFile?.path ?? null);
+			}
+		});
 
 		this.root.render(
 			<AppContext.Provider value={ctx}>

@@ -4,13 +4,13 @@ import { getChildFiles, getParentFiles } from "../../utils/hierarchyBuilder";
 import { TFile } from "obsidian";
 import { useMemoAsync } from "../../hooks/useMemoAsync";
 import { filesData } from "../../state";
-import { useUpdateCurrentFile } from "../../hooks/useUpdateCurrentFile";
+import { useUpdateRootFile } from "../../hooks/useUpdateRootFile";
 import { FileNodeContent } from "./FileNodeContent";
 import { FileRelatives } from "./FileRelatives";
 
 export const RootFileNode = ({ file }: { file: TFile }) => {
 	const ctx = usePluginContext();
-	const updateCurrentFile = useUpdateCurrentFile();
+	const updateRootFile = useUpdateRootFile();
 
 	const [highlighted, setHighlighted] = filesData.highlighted.useStore(
 		file.path,
@@ -21,7 +21,7 @@ export const RootFileNode = ({ file }: { file: TFile }) => {
 			const isNewTab =
 				e.ctrlKey || e.metaKey ? (e.altKey ? "split" : "tab") : false;
 
-			updateCurrentFile(file);
+			updateRootFile(file);
 
 			ctx.app.workspace.openLinkText(file.path, "", isNewTab, {
 				active: true,

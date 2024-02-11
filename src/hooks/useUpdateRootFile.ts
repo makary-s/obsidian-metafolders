@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { filesData } from "src/state";
 import { usePluginContext } from "./appContext";
 
-export const useUpdateCurrentFile = () => {
+export const useUpdateRootFile = () => {
 	const ctx = usePluginContext();
 
 	return useCallback((newFile_?: TFile, shouldSaveHistory = true) => {

@@ -4,14 +4,14 @@ import { getChildFiles, getParentFiles } from "../../utils/hierarchyBuilder";
 import { TFile } from "obsidian";
 import { useMemoAsync } from "../../hooks/useMemoAsync";
 import { filesData } from "../../state";
-import { useUpdateCurrentFile } from "../../hooks/useUpdateCurrentFile";
+import { useUpdateRootFile } from "../../hooks/useUpdateRootFile";
 import { FileNodeProps } from "./types";
 import { FileNodeContent } from "./FileNodeContent";
 import { FileRelatives } from "./FileRelatives";
 
 export const FileNode = ({ file, kind, depth }: FileNodeProps) => {
 	const ctx = usePluginContext();
-	const updateCurrentFile = useUpdateCurrentFile();
+	const updateRootFile = useUpdateRootFile();
 	const clickCount = useRef({ count: 0, timestamp: -1 });
 
 	const [highlighted, setHighlighted] = filesData.highlighted.useStore(
@@ -28,7 +28,7 @@ export const FileNode = ({ file, kind, depth }: FileNodeProps) => {
 				if (now - clickCount.current.timestamp < 300) {
 					clickCount.current.count = 0;
 					clickCount.current.timestamp = 0;
-					updateCurrentFile(file);
+					updateRootFile(file);
 				} else {
 					clickCount.current.count = 1;
 					clickCount.current.timestamp = now;

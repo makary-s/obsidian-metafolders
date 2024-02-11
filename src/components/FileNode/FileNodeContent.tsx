@@ -30,19 +30,27 @@ export const FileNodeContent = ({
 }) => {
 	const ctx = usePluginContext();
 
+	const currentFile = ctx.app.workspace.getActiveFile();
+
+	const [isCurrent, setCurrent] = useState(currentFile?.path === file.path);
+
 	const expanderIcon = hasChildren
 		? {
-				kind: "chevron-right",
+				kind: isCurrent ? "chevron-right-circle" : "chevron-right",
 				className: expanded ? "file-node__expander_expanded" : "",
 				onClick: toggleExpand,
 			}
-		: { kind: "dot" };
+		: { kind: isCurrent ? "circle-dot" : "dot" };
+
+	useEffect(() => {
+		ctx.currentFile.register({ path: file.path, setCurrent });
+		ctx.currentFile.update(currentFile?.path ?? null);
+		return () => ctx.currentFile.unregister(file.path);
+	}, [setCurrent, file.path]);
 
 	const [highlighted, setHighlighted] = filesData.highlighted.useStore(
 		file.path,
 	);
-
-	const currentFile = ctx.app.workspace.getActiveFile();
 
 	const isLinked = currentFile
 		? checkHasMetaLink(ctx, currentFile, file.basename)
@@ -79,8 +87,6 @@ export const FileNodeContent = ({
 		});
 	}, []);
 
-	const isCurrent = currentFile?.path === file.path;
-
 	const isPrev =
 		filesData.history.getState().files.at(-2)?.path === file.path;
 
@@ -98,17 +104,15 @@ export const FileNodeContent = ({
 			onMouseEnter={() => setHighlighted(true)}
 			onMouseLeave={() => setHighlighted(false)}
 		>
-			{hasChildren !== undefined && (
-				<ObsIcon
-					kind={expanderIcon.kind}
-					onClick={expanderIcon.onClick}
-					size="xs"
-					className={[
-						"file-node__expander",
-						expanderIcon.className ?? "",
-					].join(" ")}
-				/>
-			)}
+			<ObsIcon
+				kind={expanderIcon.kind}
+				onClick={expanderIcon.onClick}
+				size="xs"
+				className={[
+					"file-node__expander",
+					expanderIcon.className ?? "",
+				].join(" ")}
+			/>
 
 			<div className="file-node__content">{file.basename}</div>
 			{isPrev ? <ObsIcon size="s" disabled kind="history" /> : null}

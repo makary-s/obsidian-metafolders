@@ -1,6 +1,6 @@
 import { TFile } from "obsidian";
-import { PluginContext } from "../types";
 import { getFileBacklinks, getFileByPath } from "./obsidian";
+import { PluginContext } from "src/context";
 
 const checkHasPropByPosition = async (
 	ctx: PluginContext,
