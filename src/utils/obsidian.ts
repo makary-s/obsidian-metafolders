@@ -1,6 +1,6 @@
 import { LinkCache, TFile } from "obsidian";
-import { PluginContext } from "../types";
 import { SMarkdownPage } from "obsidian-dataview";
+import { PluginContext } from "src/context";
 
 export const getFileByPath = (
 	ctx: PluginContext,
@@ -21,6 +21,10 @@ export const getFileBacklinksDV = (
 	ctx: PluginContext,
 	file: TFile,
 ): TFile[] => {
+	if (!ctx.dv) {
+		throw new Error("Dataview API is not available");
+	}
+
 	const page = ctx.dv.page(file.path) as SMarkdownPage;
 	const inlinks = page.file.inlinks;
 
