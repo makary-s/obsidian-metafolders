@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { ObsIcon } from "./ObsIcon";
+import { ObsIcon } from "../baseComponents/ObsIcon";
 import { filesData } from "../state";
 import { useStore } from "zustand";
 import { useUpdateCurrentFile } from "../hooks/useUpdateCurrentFile";
