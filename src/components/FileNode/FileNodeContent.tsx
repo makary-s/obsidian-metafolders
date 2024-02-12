@@ -32,7 +32,7 @@ export const FileNodeContent = ({
 
 	const currentFile = ctx.app.workspace.getActiveFile();
 
-	const [isCurrent, setCurrent] = useState(currentFile?.path === file.path);
+	const isCurrent = ctx.currentFile.useIsCurrent(file.path);
 
 	const expanderIcon = hasChildren
 		? {
@@ -41,12 +41,6 @@ export const FileNodeContent = ({
 				onClick: toggleExpand,
 			}
 		: { kind: isCurrent ? "circle-dot" : "dot" };
-
-	useEffect(() => {
-		ctx.currentFile.register({ path: file.path, setCurrent });
-		ctx.currentFile.update(currentFile?.path ?? null);
-		return () => ctx.currentFile.unregister(file.path);
-	}, [setCurrent, file.path]);
 
 	const [highlighted, setHighlighted] = filesData.highlighted.useStore(
 		file.path,
