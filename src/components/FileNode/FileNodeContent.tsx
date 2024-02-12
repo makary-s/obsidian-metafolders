@@ -49,37 +49,58 @@ export const FileNodeContent = ({
 	const isLinked = currentFile
 		? checkHasMetaLink(ctx, currentFile, file.basename)
 		: false;
+
 	const [linkIcon, setLinkIcon] = useState(isLinked ? "unlink" : "link");
 
 	useEffect(() => {
 		setLinkIcon(isLinked ? "unlink" : "link");
-	}, [highlighted, isLinked]);
+		// FIXME: intentionally do not subscribe to isLinked,
+		// because processFrontMatter works with an untraceable delay
+		// which can lead to bugs
+	}, [highlighted]);
 
-	const toggleLink: MouseEventHandler<HTMLElement> = useCallback((e) => {
-		e.stopPropagation();
+	const toggleLink: MouseEventHandler<HTMLElement> = useCallback(
+		(e) => {
+			e.stopPropagation();
 
-		const currentFile = ctx.app.workspace.getActiveFile();
+			const currentFile = ctx.app.workspace.getActiveFile();
 
-		if (!currentFile || currentFile.path === file.path) return;
+			if (!currentFile || currentFile.path === file.path) return;
 
-		ctx.app.fileManager.processFrontMatter(currentFile, (frontMatter) => {
-			const isLinked = checkHasMetaLink(ctx, currentFile, file.basename);
-			const newValue = `[[${file.basename}]]`;
-			if (isLinked) {
-				const index =
-					frontMatter[ctx.settings.parentPropName].indexOf(newValue);
-				if (index < 0) return;
+			// FIXME: the fact that the function has resolved does not mean that the text has changed
+			// Be careful, this may cause the state to be out of sync
+			ctx.app.fileManager.processFrontMatter(
+				currentFile,
+				(frontMatter) => {
+					const isLinked = checkHasMetaLink(
+						ctx,
+						currentFile,
+						file.basename,
+					);
+					const newValue = `[[${file.basename}]]`;
+					if (isLinked) {
+						const index =
+							frontMatter[ctx.settings.parentPropName].indexOf(
+								newValue,
+							);
+						if (index < 0) return;
 
-				frontMatter[ctx.settings.parentPropName].splice(index, 1);
-				setLinkIcon("link");
-			} else if (frontMatter[ctx.settings.parentPropName]) {
-				frontMatter[ctx.settings.parentPropName] ??= [];
+						frontMatter[ctx.settings.parentPropName].splice(
+							index,
+							1,
+						);
+						setLinkIcon("link");
+					} else if (frontMatter[ctx.settings.parentPropName]) {
+						frontMatter[ctx.settings.parentPropName] ??= [];
 
-				frontMatter[ctx.settings.parentPropName].push(newValue);
-				setLinkIcon("unlink");
-			}
-		});
-	}, []);
+						frontMatter[ctx.settings.parentPropName].push(newValue);
+						setLinkIcon("unlink");
+					}
+				},
+			);
+		},
+		[setLinkIcon],
+	);
 
 	const isPrev =
 		filesData.history.getState().files.at(-2)?.path === file.path;

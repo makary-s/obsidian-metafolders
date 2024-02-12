@@ -45,7 +45,7 @@ export const checkHasMetaLink = (
 	ctx: PluginContext,
 	file: TFile,
 	linkPath: string,
-) => {
+): boolean => {
 	const frontmatter = ctx.app.metadataCache.getFileCache(file)?.frontmatter;
 
 	if (!frontmatter) return false;
