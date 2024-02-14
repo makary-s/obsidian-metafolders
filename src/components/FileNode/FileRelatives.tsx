@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { TFile } from "obsidian";
 import { NodeKind } from "./types";
 import { FileNode } from "./FileNode";
@@ -30,14 +30,14 @@ export const FileRelatives = ({
 
 	const containerRef = useRef<HTMLDivElement>(null);
 
-	const [marginTop, setMarginTop] = useState(expanded ? "0" : "-100vh"); // TODO collapsed initial value
+	const [marginTop, setMarginTop] = useState(expanded ? "0" : "-100vh");
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		setMarginTop(
 			expanded
 				? "0"
 				: containerRef.current === null
-					? "-1000px"
+					? "-100vh"
 					: `-${containerRef.current.scrollHeight}px`,
 		);
 	}, [expanded]);

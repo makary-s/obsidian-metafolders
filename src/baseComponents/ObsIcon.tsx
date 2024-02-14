@@ -1,4 +1,4 @@
-import React, { MouseEventHandler, useEffect, useRef } from "react";
+import React, { MouseEventHandler, useLayoutEffect, useRef } from "react";
 import { setIcon, type IconName } from "obsidian";
 
 export const ObsIcon = (props: {
@@ -13,7 +13,7 @@ export const ObsIcon = (props: {
 
 	const ref = useRef<HTMLElement>(null);
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		if (ref.current === null) return;
 		setIcon(ref.current, kind);
 	}, [kind, ref.current]);
