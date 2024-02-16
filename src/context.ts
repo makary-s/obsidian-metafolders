@@ -1,6 +1,6 @@
 import { App } from "obsidian";
 import { getAPI } from "obsidian-dataview";
-import { useEffect, useState } from "react";
+import { DependencyList, useEffect, useState } from "react";
 import { DataviewApi, PluginSettings } from "src/types";
 
 class CurrentFile {
@@ -58,6 +58,7 @@ class FileUpdater {
 	private updateQueue = new Set<string>();
 
 	dispatch() {
+		console.log(this.updateQueue, this.files);
 		this.updateQueue.forEach((path) => {
 			this.files.get(path)?.forEach((fn) => fn());
 			this.updateQueue.delete(path);
@@ -68,7 +69,11 @@ class FileUpdater {
 		this.updateQueue.add(path);
 	}
 
-	useSubscribe(path: string, update: () => void) {
+	useSubscribe(
+		path: string,
+		update: () => void,
+		deps: DependencyList = [update],
+	) {
 		useEffect(() => {
 			const current =
 				this.files.get(path) ??
@@ -82,7 +87,7 @@ class FileUpdater {
 					this.files.delete(path);
 				}
 			};
-		}, [path, update]);
+		}, [path, ...deps]);
 	}
 }
 

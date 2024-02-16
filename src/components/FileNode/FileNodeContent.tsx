@@ -10,6 +10,7 @@ import { ObsIcon } from "../../baseComponents/ObsIcon";
 import { filesData } from "../../state";
 import { checkHasMetaLink } from "../../utils/obsidian";
 import { NodeKind } from "./types";
+import { toggleLink } from "./helpers";
 
 export const FileNodeContent = ({
 	file,
@@ -59,49 +60,22 @@ export const FileNodeContent = ({
 		// which can lead to bugs
 	}, [highlighted]);
 
-	const toggleLink: MouseEventHandler<HTMLElement> = useCallback(
+	const handleToggleLink: MouseEventHandler<HTMLElement> = useCallback(
 		(e) => {
 			e.stopPropagation();
 
 			const currentFile = ctx.app.workspace.getActiveFile();
+			if (!currentFile) return;
 
-			if (!currentFile || currentFile.path === file.path) return;
-
-			// FIXME: the fact that the function has resolved does not mean that the text has changed
-			// Be careful, this may cause the state to be out of sync
-			ctx.app.fileManager.processFrontMatter(
-				currentFile,
-				(frontMatter) => {
-					const isLinked = checkHasMetaLink(
-						ctx,
-						currentFile,
-						file.basename,
-					);
-					const newValue = `[[${file.basename}]]`;
-					if (isLinked) {
-						const index =
-							frontMatter[ctx.settings.parentPropName].indexOf(
-								newValue,
-							);
-						if (index < 0) return;
-
-						frontMatter[ctx.settings.parentPropName].splice(
-							index,
-							1,
-						);
-						setLinkIcon("link");
-					} else if (frontMatter[ctx.settings.parentPropName]) {
-						frontMatter[ctx.settings.parentPropName] ??= [];
-
-						frontMatter[ctx.settings.parentPropName].push(newValue);
-						setLinkIcon("unlink");
-					}
-					ctx.relativeFilesUpdater.addToQueue(file.path);
-					ctx.relativeFilesUpdater.addToQueue(currentFile.path);
+			toggleLink(ctx, {
+				file: currentFile,
+				linkedFile: file,
+				onChange: (newIsLinked) => {
+					setLinkIcon(newIsLinked ? "unlink" : "link");
 				},
-			);
+			});
 		},
-		[setLinkIcon],
+		[setLinkIcon, file],
 	);
 
 	const isPrev =
@@ -135,7 +109,11 @@ export const FileNodeContent = ({
 			{isPrev ? <ObsIcon size="s" disabled kind="history" /> : null}
 			<div className="file-node__content-side">
 				{!isCurrent && (
-					<ObsIcon kind={linkIcon} onClick={toggleLink} size="xs" />
+					<ObsIcon
+						kind={linkIcon}
+						onClick={handleToggleLink}
+						size="xs"
+					/>
 				)}
 			</div>
 		</div>

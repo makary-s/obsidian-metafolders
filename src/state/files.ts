@@ -13,5 +13,4 @@ export const filesData = {
 	})),
 	highlighted: createCollectionStore(false),
 	expanded: createCollectionStore(false),
-	exists: createCollectionStore<null | string>(null),
 };
