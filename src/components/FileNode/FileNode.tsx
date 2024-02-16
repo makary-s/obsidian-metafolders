@@ -53,7 +53,9 @@ export const FileNode = ({ file, kind, depth }: FileNodeProps) => {
 		setExpanded((x) => !x);
 	}, []);
 
-	const relativeFilesAsync = useMemoAsync<TFile[]>(async () => {
+	const [relativeFilesAsync, updateRelativeFiles] = useMemoAsync<
+		TFile[]
+	>(async () => {
 		switch (kind) {
 			case "parent":
 				return getParentFiles(ctx, file);
@@ -61,6 +63,8 @@ export const FileNode = ({ file, kind, depth }: FileNodeProps) => {
 				return getChildFiles(ctx, file);
 		}
 	}, [kind, file, ctx]);
+
+	ctx.relativeFilesUpdater.useSubscribe(file.path, updateRelativeFiles);
 
 	const hasChildren =
 		relativeFilesAsync.status !== "loading" &&

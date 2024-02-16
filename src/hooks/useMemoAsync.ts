@@ -1,4 +1,10 @@
-import { DependencyList, useEffect, useState } from "react";
+import {
+	DependencyList,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
 export type MemoAsyncResult<T> =
 	| { status: "loading" }
@@ -6,13 +12,33 @@ export type MemoAsyncResult<T> =
 
 export const useMemoAsync = <T>(fn: () => Promise<T>, deps: DependencyList) => {
 	const [data, setData] = useState<MemoAsyncResult<T>>({ status: "loading" });
+	const calledCount = useRef(0);
 
-	useEffect(() => {
+	const update = useCallback(() => {
 		if (data.status !== "loading") {
 			setData({ status: "loading" });
 		}
-		fn().then((x) => setData({ status: "ready", data: x }));
+
+		calledCount.current += 1;
+		if (calledCount.current > 1) {
+			return;
+		}
+
+		fn()
+			.then((x) => {
+				setData({ status: "ready", data: x });
+				if (calledCount.current > 1) {
+					update();
+				}
+			})
+			.finally(() => {
+				calledCount.current = 0;
+			});
 	}, deps);
 
-	return data;
+	useEffect(() => {
+		update();
+	}, deps);
+
+	return [data, update] as const;
 };

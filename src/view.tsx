@@ -58,6 +58,10 @@ export default class HierarchyView extends ItemView {
 			}
 		});
 
+		this.app.metadataCache.on("resolved", () => {
+			ctx.relativeFilesUpdater.dispatch();
+		});
+
 		this.root.render(
 			<AppContext.Provider value={ctx}>
 				<MainView />

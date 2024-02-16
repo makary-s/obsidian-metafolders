@@ -30,13 +30,17 @@ export const RootFileNode = ({ file }: { file: TFile }) => {
 		[file],
 	);
 
-	const parentFilesAsync = useMemoAsync<TFile[]>(async () => {
+	const [parentFilesAsync] = useMemoAsync<TFile[]>(async () => {
 		return getParentFiles(ctx, file);
 	}, [file, ctx]);
 
-	const childFilesAsync = useMemoAsync<TFile[]>(async () => {
+	const [childFilesAsync, updateChildFilesAsync] = useMemoAsync<
+		TFile[]
+	>(async () => {
 		return getChildFiles(ctx, file);
 	}, [file, ctx]);
+
+	ctx.relativeFilesUpdater.useSubscribe(file.path, updateChildFilesAsync);
 
 	if (
 		parentFilesAsync.status === "loading" ||

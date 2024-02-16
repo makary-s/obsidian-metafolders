@@ -96,6 +96,8 @@ export const FileNodeContent = ({
 						frontMatter[ctx.settings.parentPropName].push(newValue);
 						setLinkIcon("unlink");
 					}
+					ctx.relativeFilesUpdater.addToQueue(file.path);
+					ctx.relativeFilesUpdater.addToQueue(currentFile.path);
 				},
 			);
 		},

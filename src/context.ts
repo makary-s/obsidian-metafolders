@@ -53,12 +53,46 @@ class CurrentFile {
 	}
 }
 
+class FileUpdater {
+	private files = new Map<string, Set<() => void>>();
+	private updateQueue = new Set<string>();
+
+	dispatch() {
+		this.updateQueue.forEach((path) => {
+			this.files.get(path)?.forEach((fn) => fn());
+			this.updateQueue.delete(path);
+		});
+	}
+
+	addToQueue(path: string): void {
+		this.updateQueue.add(path);
+	}
+
+	useSubscribe(path: string, update: () => void) {
+		useEffect(() => {
+			const current =
+				this.files.get(path) ??
+				this.files.set(path, new Set()).get(path)!;
+
+			current.add(update);
+
+			return () => {
+				this.files.get(path)?.delete(update);
+				if (this.files.size === 0) {
+					this.files.delete(path);
+				}
+			};
+		}, [path, update]);
+	}
+}
+
 export class PluginContext {
 	app: App;
 	settings: PluginSettings;
 
 	dv?: DataviewApi;
 	currentFile: CurrentFile;
+	relativeFilesUpdater: FileUpdater;
 
 	constructor(p: Pick<PluginContext, "app" | "settings">) {
 		this.app = p.app;
@@ -66,5 +100,6 @@ export class PluginContext {
 
 		this.dv = getAPI(this.app);
 		this.currentFile = new CurrentFile({ app: this.app });
+		this.relativeFilesUpdater = new FileUpdater();
 	}
 }
