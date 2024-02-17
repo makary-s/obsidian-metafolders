@@ -7,9 +7,12 @@ import React, {
 import { usePluginContext } from "../../hooks/appContext";
 import { TFile } from "obsidian";
 import { ObsIcon } from "../../baseComponents/ObsIcon";
-import { checkHasMetaLink } from "../../utils/obsidian";
 import { NodeKind } from "./types";
-import { toggleLink } from "./helpers";
+import {
+	addParentLink,
+	checkHasParent,
+	removeParentLink,
+} from "src/utils/hierarchyBuilder";
 
 export const FileNodeContent = ({
 	file,
@@ -44,35 +47,40 @@ export const FileNodeContent = ({
 
 	const highlighted = ctx.highlighted.useIsCurrent(file.path);
 
-	const isLinked = currentFile
-		? checkHasMetaLink(ctx, currentFile, file.basename)
-		: false;
+	const [isLinked, setLinked] = useState(
+		currentFile ? checkHasParent(ctx, currentFile, file.basename) : false,
+	);
 
 	const [linkIcon, setLinkIcon] = useState(isLinked ? "unlink" : "link");
 
 	useEffect(() => {
 		setLinkIcon(isLinked ? "unlink" : "link");
-		// FIXME: intentionally do not subscribe to isLinked,
-		// because processFrontMatter works with an untraceable delay
-		// which can lead to bugs
-	}, [highlighted]);
+	}, [highlighted, isLinked]);
 
 	const handleToggleLink: MouseEventHandler<HTMLElement> = useCallback(
-		(e) => {
+		async (e) => {
 			e.stopPropagation();
 
 			const currentFile = ctx.app.workspace.getActiveFile();
 			if (!currentFile) return;
 
-			toggleLink(ctx, {
-				file: currentFile,
-				linkedFile: file,
-				onChange: (newIsLinked) => {
-					setLinkIcon(newIsLinked ? "unlink" : "link");
-				},
-			});
+			if (isLinked) {
+				setLinked(false);
+				await removeParentLink(ctx, {
+					file: currentFile,
+					linkedFile: file,
+				});
+			} else {
+				setLinked(true);
+				await addParentLink(ctx, {
+					file: currentFile,
+					linkedFile: file,
+				});
+			}
+
+			setLinked(checkHasParent(ctx, currentFile, file.basename));
 		},
-		[setLinkIcon, file],
+		[setLinkIcon, file, isLinked],
 	);
 
 	const isPrev = ctx.history.checkPreviousFile(file);

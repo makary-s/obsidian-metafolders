@@ -1,6 +1,7 @@
 import { TFile } from "obsidian";
 import { getFileBacklinks, getFileByPath } from "./obsidian";
 import { PluginContext } from "src/context";
+import { createPromise } from "./basic";
 
 const checkHasPropByPosition = async (
 	ctx: PluginContext,
@@ -111,4 +112,97 @@ export const getChildFiles = async (
 	}
 
 	return childFiles;
+};
+
+// TODO draft; does not include inline links
+export const checkHasParent = (
+	ctx: PluginContext,
+	file: TFile,
+	linkPath: string,
+): boolean => {
+	const frontmatter = ctx.app.metadataCache.getFileCache(file)?.frontmatter;
+
+	if (!frontmatter) return false;
+
+	return Boolean(
+		frontmatter[ctx.settings.parentPropName]?.includes(`[[${linkPath}]]`),
+	);
+};
+
+export const addParentLink = async (
+	ctx: PluginContext,
+	p: {
+		file: TFile;
+		linkedFile: TFile;
+	},
+): Promise<void> => {
+	const finished = createPromise<void>();
+
+	const checkLinked = () =>
+		checkHasParent(ctx, p.file, p.linkedFile.basename);
+
+	ctx.app.fileManager.processFrontMatter(p.file, (frontMatter) => {
+		const newValue = `[[${p.linkedFile.basename}]]`;
+
+		if (checkLinked()) {
+			finished.resolve();
+			return;
+		}
+
+		if (frontMatter[ctx.settings.parentPropName]) {
+			frontMatter[ctx.settings.parentPropName] ??= [];
+
+			frontMatter[ctx.settings.parentPropName].push(newValue);
+		}
+
+		ctx.relativeFilesUpdater.addToUpdateQueue(p.file.path);
+		ctx.relativeFilesUpdater.addToUpdateQueue(p.linkedFile.path);
+	});
+
+	const eventRef = ctx.app.metadataCache.on("resolved", () => {
+		if (checkLinked()) finished.resolve();
+	});
+
+	await finished;
+
+	ctx.app.metadataCache.offref(eventRef);
+};
+
+export const removeParentLink = async (
+	ctx: PluginContext,
+	p: {
+		file: TFile;
+		linkedFile: TFile;
+	},
+): Promise<void> => {
+	const finished = createPromise<void>();
+
+	const checkLinked = () =>
+		checkHasParent(ctx, p.file, p.linkedFile.basename);
+
+	ctx.app.fileManager.processFrontMatter(p.file, (frontMatter) => {
+		const newValue = `[[${p.linkedFile.basename}]]`;
+
+		if (!checkLinked()) {
+			finished.resolve();
+			return;
+		}
+
+		const index =
+			frontMatter[ctx.settings.parentPropName].indexOf(newValue);
+		if (index !== -1) {
+			frontMatter[ctx.settings.parentPropName].splice(index, 1);
+		}
+
+		ctx.relativeFilesUpdater.addToUpdateQueue(p.file.path);
+		ctx.relativeFilesUpdater.addToUpdateQueue(p.linkedFile.path);
+	});
+
+	const eventRef = ctx.app.metadataCache.on("resolved", () => {
+		if (!checkLinked()) finished.resolve();
+	});
+
+	await finished;
+
+	ctx.app.metadataCache.offref(eventRef);
 };

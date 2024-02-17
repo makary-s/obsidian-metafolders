@@ -51,9 +51,12 @@ export default class HierarchyView extends ItemView {
 			}
 		});
 
-		this.app.metadataCache.on("resolved", () => {
-			ctx.relativeFilesUpdater.updateQueue();
-		});
+		// TODO: add `registerEvent` everywhere
+		this.registerEvent(
+			this.app.metadataCache.on("resolved", () => {
+				ctx.relativeFilesUpdater.updateQueue();
+			}),
+		);
 
 		this.root.render(
 			<AppContext.Provider value={ctx}>
