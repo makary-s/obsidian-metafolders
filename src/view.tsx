@@ -4,7 +4,6 @@ import { ItemView, WorkspaceLeaf } from "obsidian";
 import { MainView } from "./components/MainView";
 import { TopBar } from "./components/TopBar";
 import { AppContext } from "./hooks/appContext";
-import { getAPI } from "obsidian-dataview";
 import { PLUGIN_ICON_NAME, PLUGIN_TITLE, PLUGIN_VIEW_ID } from "./constants";
 import { PluginContext } from "./context";
 import { PluginSettings } from "./types";
@@ -36,12 +35,6 @@ export default class HierarchyView extends ItemView {
 		this.headerRoot = createRoot(headerEl);
 		this.containerEl.prepend(headerEl);
 
-		const dv = getAPI(this.app);
-		if (!dv) {
-			this.root.render(<div>dataview is required</div>);
-			return;
-		}
-
 		const ctx = new PluginContext({
 			app: this.app,
 			settings: this.settings,
@@ -54,12 +47,12 @@ export default class HierarchyView extends ItemView {
 
 			if (viewState.type === "markdown") {
 				const newFile = ctx.app.workspace.getActiveFile();
-				ctx.currentFile.update(newFile?.path ?? null);
+				ctx.currentFile.set(newFile?.path ?? null);
 			}
 		});
 
 		this.app.metadataCache.on("resolved", () => {
-			ctx.relativeFilesUpdater.dispatch();
+			ctx.relativeFilesUpdater.updateQueue();
 		});
 
 		this.root.render(

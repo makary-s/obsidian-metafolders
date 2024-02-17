@@ -7,7 +7,6 @@ import React, {
 import { usePluginContext } from "../../hooks/appContext";
 import { TFile } from "obsidian";
 import { ObsIcon } from "../../baseComponents/ObsIcon";
-import { filesData } from "../../state";
 import { checkHasMetaLink } from "../../utils/obsidian";
 import { NodeKind } from "./types";
 import { toggleLink } from "./helpers";
@@ -43,9 +42,7 @@ export const FileNodeContent = ({
 			}
 		: { kind: isCurrent ? "circle-dot" : "dot" };
 
-	const [highlighted, setHighlighted] = filesData.highlighted.useStore(
-		file.path,
-	);
+	const highlighted = ctx.highlighted.useIsCurrent(file.path);
 
 	const isLinked = currentFile
 		? checkHasMetaLink(ctx, currentFile, file.basename)
@@ -78,8 +75,7 @@ export const FileNodeContent = ({
 		[setLinkIcon, file],
 	);
 
-	const isPrev =
-		filesData.history.getState().files.at(-2)?.path === file.path;
+	const isPrev = ctx.history.checkPreviousFile(file);
 
 	return (
 		<div
@@ -92,8 +88,8 @@ export const FileNodeContent = ({
 				.filter(Boolean)
 				.join(" ")}
 			onClick={onClick}
-			onMouseEnter={() => setHighlighted(true)}
-			onMouseLeave={() => setHighlighted(false)}
+			onMouseEnter={() => ctx.highlighted.set(file.path)}
+			onMouseLeave={() => ctx.highlighted.set(null)}
 		>
 			<ObsIcon
 				kind={expanderIcon.kind}

@@ -1,30 +1,19 @@
 import { TFile } from "obsidian";
 import { useCallback } from "react";
-import { filesData } from "src/state";
 import { usePluginContext } from "./appContext";
 
 export const useUpdateRootFile = () => {
 	const ctx = usePluginContext();
 
 	return useCallback((newFile_?: TFile, shouldSaveHistory = true) => {
-		const { value: rootFile } = filesData.rootFile.getState();
+		const rootFile = ctx.rootFile.get();
 
 		const newFile = newFile_ ?? ctx.app.workspace.getActiveFile();
 		if (newFile && newFile.path !== rootFile?.path) {
-			filesData.rootFile.setState({ value: newFile });
+			ctx.rootFile.set(newFile);
+
 			if (shouldSaveHistory) {
-				filesData.history.setState((s) => {
-					const newFiles = s.files
-						.slice(0, s.files.length + 1 - s.offset)
-						.concat(newFile);
-					if (s.files.length > 20) {
-						newFiles.shift();
-					}
-					return {
-						offset: 1,
-						files: newFiles,
-					};
-				});
+				ctx.history.push(newFile);
 			}
 		}
 	}, []);

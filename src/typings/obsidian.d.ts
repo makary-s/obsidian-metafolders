@@ -1,16 +1,10 @@
 import "obsidian";
-import { DataviewApi } from "../types";
 
 declare module "obsidian" {
 	interface App {
 		appId?: string;
 		plugins: {
 			enabledPlugins: Set<string>;
-			plugins: {
-				dataview?: {
-					api: DataviewApi;
-				};
-			};
 		};
 	}
 
@@ -23,11 +17,5 @@ declare module "obsidian" {
 	interface LinkCache {
 		/** could contain multiple keys joined with '.' */
 		key?: string;
-	}
-}
-
-declare global {
-	interface Window {
-		DataviewAPI?: DataviewApi;
 	}
 }

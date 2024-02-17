@@ -3,7 +3,6 @@ import { usePluginContext } from "../../hooks/appContext";
 import { getChildFiles, getParentFiles } from "../../utils/hierarchyBuilder";
 import { TFile } from "obsidian";
 import { useMemoAsync } from "../../hooks/useMemoAsync";
-import { filesData } from "../../state";
 import { useUpdateRootFile } from "../../hooks/useUpdateRootFile";
 import { FileNodeProps } from "./types";
 import { FileNodeContent } from "./FileNodeContent";
@@ -14,9 +13,11 @@ export const FileNode = ({ file, kind, depth }: FileNodeProps) => {
 	const updateRootFile = useUpdateRootFile();
 	const clickCount = useRef({ count: 0, timestamp: -1 });
 
-	const [highlighted, setHighlighted] = filesData.highlighted.useStore(
-		file.path,
-	);
+	const highlighted = ctx.highlighted.useIsCurrent(file.path);
+
+	const setHighlighted = useCallback(() => {
+		ctx.highlighted.set(file.path);
+	}, [file.path]);
 
 	const onClick: MouseEventHandler<HTMLDivElement> = useCallback(
 		(e) => {
@@ -44,14 +45,17 @@ export const FileNode = ({ file, kind, depth }: FileNodeProps) => {
 		[file],
 	);
 
-	const [expanded, setExpanded] = filesData.expanded.useStore(
-		`${file.path}::${kind}::${depth}`,
-	);
+	const expandId = `${file.path}::${kind}::${depth}`;
 
-	const toggleExpand: MouseEventHandler<HTMLElement> = useCallback((e) => {
-		e.stopPropagation();
-		setExpanded((x) => !x);
-	}, []);
+	const expanded = ctx.expanded.useValue(expandId);
+
+	const toggleExpand: MouseEventHandler<HTMLElement> = useCallback(
+		(e) => {
+			e.stopPropagation();
+			ctx.expanded.setFn(expandId, (x) => !x);
+		},
+		[expandId],
+	);
 
 	const [relativeFilesAsync, updateRelativeFiles] = useMemoAsync<
 		TFile[]

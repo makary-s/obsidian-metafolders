@@ -1,53 +1,35 @@
 import React, { useCallback } from "react";
 import { ObsIcon } from "../baseComponents/ObsIcon";
-import { filesData } from "../state";
-import { useStore } from "zustand";
 import { useUpdateRootFile } from "../hooks/useUpdateRootFile";
+import { usePluginContext } from "src/hooks/appContext";
 
 const useProps = () => {
+	const ctx = usePluginContext();
 	const updateCurrentFile = useUpdateRootFile();
 
 	const toggleAutoRefresh = useCallback(() => {
-		filesData.isAutoRefresh.setState((x) => !x);
+		ctx.isAutoRefresh.setFn((x) => !x);
 		updateCurrentFile();
 	}, []);
 
 	const onUndo = useCallback(() => {
-		const history = filesData.history.getState();
-
-		const newOffset = history.offset + 1;
-		const previousFile = history.files.at(-newOffset);
-
-		filesData.history.setState((s) => ({
-			...s,
-			offset: newOffset,
-		}));
+		const previousFile = ctx.history.undo();
 
 		updateCurrentFile(previousFile, false);
 	}, []);
 
 	const onRedo = useCallback(() => {
-		const history = filesData.history.getState();
-
-		const newOffset = history.offset - 1;
-		const previousFile = history.files.at(-newOffset);
-
-		filesData.history.setState((s) => ({
-			...s,
-			offset: newOffset,
-		}));
+		const previousFile = ctx.history.redo();
 
 		updateCurrentFile(previousFile, false);
 	}, []);
 
-	const history = useStore(filesData.history);
-	const isAutoRefresh = useStore(filesData.isAutoRefresh);
+	const isAutoRefresh = ctx.isAutoRefresh.useValue();
 
 	return {
+		...ctx.history.useValue(),
 		onUndo,
 		onRedo,
-		undoDisabled: history.offset >= history.files.length,
-		redoDisabled: history.offset <= 1,
 		isAutoRefresh,
 		toggleAutoRefresh,
 	};
@@ -65,13 +47,13 @@ export const TopBar = () => {
 			/>
 			<div className="top-panel_history">
 				<ObsIcon
-					disabled={p.undoDisabled}
+					disabled={!p.hasUndo}
 					kind={"arrow-left"}
 					size="s"
 					onClick={p.onUndo}
 				/>
 				<ObsIcon
-					disabled={p.redoDisabled}
+					disabled={!p.hasRedo}
 					kind={"arrow-right"}
 					size="s"
 					onClick={p.onRedo}

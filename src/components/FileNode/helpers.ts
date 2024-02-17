@@ -31,7 +31,7 @@ export const toggleLink = (
 			p.onChange(true);
 		}
 
-		ctx.relativeFilesUpdater.addToQueue(p.file.path);
-		ctx.relativeFilesUpdater.addToQueue(p.linkedFile.path);
+		ctx.relativeFilesUpdater.addToUpdateQueue(p.file.path);
+		ctx.relativeFilesUpdater.addToUpdateQueue(p.linkedFile.path);
 	});
 };

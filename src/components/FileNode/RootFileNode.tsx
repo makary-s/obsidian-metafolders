@@ -3,7 +3,6 @@ import { usePluginContext } from "../../hooks/appContext";
 import { getChildFiles, getParentFiles } from "../../utils/hierarchyBuilder";
 import { TFile } from "obsidian";
 import { useMemoAsync } from "../../hooks/useMemoAsync";
-import { filesData } from "../../state";
 import { useUpdateRootFile } from "../../hooks/useUpdateRootFile";
 import { FileNodeContent } from "./FileNodeContent";
 import { FileRelatives } from "./FileRelatives";
@@ -12,9 +11,11 @@ export const RootFileNode = ({ file }: { file: TFile }) => {
 	const ctx = usePluginContext();
 	const updateRootFile = useUpdateRootFile();
 
-	const [highlighted, setHighlighted] = filesData.highlighted.useStore(
-		file.path,
-	);
+	const highlighted = ctx.highlighted.useIsCurrent(file.path);
+
+	const onIndentHover = useCallback(() => {
+		ctx.highlighted.set(file.path);
+	}, [file.path]);
 
 	const onClick: MouseEventHandler<HTMLDivElement> = useCallback(
 		(e) => {
@@ -59,7 +60,7 @@ export const RootFileNode = ({ file }: { file: TFile }) => {
 				hasIndent={false}
 				highlight={highlighted}
 				kind="parent"
-				onIndentHover={setHighlighted}
+				onIndentHover={onIndentHover}
 				depth={0}
 				expanded
 			/>
@@ -76,7 +77,7 @@ export const RootFileNode = ({ file }: { file: TFile }) => {
 				hasIndent={false}
 				highlight={highlighted}
 				kind="child"
-				onIndentHover={setHighlighted}
+				onIndentHover={onIndentHover}
 				depth={0}
 				expanded
 			/>
