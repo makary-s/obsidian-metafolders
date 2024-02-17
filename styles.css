@@ -7,7 +7,7 @@
 
 	padding: var(--size-2-2);
 
-	transition: all 300ms;
+	transition: background-color 300ms;
 }
 
 .obs-icon_clickable {
@@ -17,6 +17,11 @@
 .obs-icon_clickable:hover {
 	background: rgba(0, 0, 0, 0.1);
 	box-shadow: 0px 0px 5px 0px #00000017;
+}
+
+.obs-icon_clickable > svg {
+	transition: scale 100ms;
+	scale: 1;
 }
 
 .obs-icon_clickable:hover > svg {
@@ -32,6 +37,7 @@
 	width: var(--icon-xs);
 	stroke-width: var(--icon-xs-stroke-width);
 }
+
 .obs-icon_size-s svg {
 	height: var(--icon-s);
 	width: var(--icon-s);
@@ -48,6 +54,13 @@
 	height: var(--icon-xl);
 	width: var(--icon-xl);
 	stroke-width: var(--icon-xl-stroke-width);
+}
+
+.collapsible-div {
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
 }
 
 .file-node {
@@ -72,7 +85,9 @@
 	flex-direction: row;
 	padding: 0 var(--size-2-2);
 	margin-left: 0px;
-	transition: all 300ms;
+	transition:
+		border-radius 300ms,
+		background-color 300ms;
 	gap: var(--size-2-2);
 	align-items: center;
 	color: var(--nav-item-color);
@@ -124,24 +139,17 @@
 	flex-direction: row;
 }
 
-.file-node__relatives-overflow-wrapper {
-	overflow: hidden;
-	width: 100%;
-}
-
 .file-node__relatives-container {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
 	font-size: var(--font-ui-small);
-
-	transition: margin-top 100ms;
 }
 
 .file-node__indent {
 	padding-left: calc(var(--size-2-2) + var(--size-2-2) + var(--size-4-2));
 	border-right: var(--border-width) solid var(--background-modifier-border);
-	transition: all 300ms;
+	transition: border-color 300ms;
 }
 
 .file-node__indent:hover {

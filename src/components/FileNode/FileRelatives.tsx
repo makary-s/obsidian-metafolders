@@ -1,7 +1,8 @@
-import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
+import React, { useCallback } from "react";
 import { TFile } from "obsidian";
 import { NodeKind } from "./types";
 import { FileNode } from "./FileNode";
+import { Collapsible } from "src/baseComponents/Collapsible";
 
 export const FileRelatives = ({
 	files,
@@ -28,20 +29,6 @@ export const FileRelatives = ({
 		onIndentHover?.(false);
 	}, [onIndentHover]);
 
-	const containerRef = useRef<HTMLDivElement>(null);
-
-	const [marginTop, setMarginTop] = useState(expanded ? "0" : "-100vh");
-
-	useLayoutEffect(() => {
-		setMarginTop(
-			expanded
-				? "0"
-				: containerRef.current === null
-					? "-100vh"
-					: `-${containerRef.current.scrollHeight}px`,
-		);
-	}, [expanded]);
-
 	return (
 		<div
 			className={[
@@ -60,24 +47,19 @@ export const FileRelatives = ({
 				/>
 			) : null}
 
-			<div className="file-node__relatives-overflow-wrapper">
-				<div
-					className="file-node__relatives-container"
-					ref={containerRef}
-					style={{
-						marginTop: marginTop,
-					}}
-				>
-					{files.map((child) => (
-						<FileNode
-							file={child}
-							key={child.path}
-							kind={kind}
-							depth={depth}
-						/>
-					))}
-				</div>
-			</div>
+			<Collapsible
+				expanded={expanded}
+				className="file-node__relatives-container"
+			>
+				{files.map((child) => (
+					<FileNode
+						file={child}
+						key={child.path}
+						kind={kind}
+						depth={depth}
+					/>
+				))}
+			</Collapsible>
 		</div>
 	);
 };
