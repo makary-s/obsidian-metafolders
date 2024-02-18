@@ -1,9 +1,11 @@
 import { TFile } from "obsidian";
+import { BreadCrumb } from "src/utils/bread-crumbs";
 
 export type NodeKind = "child" | "parent";
 
 export type FileNodeProps = {
 	file: TFile;
 	kind: NodeKind;
-	depth: number;
+	parentBreadCrumps: BreadCrumb;
+	collapsedDepth: number;
 };

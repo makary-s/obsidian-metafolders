@@ -12,7 +12,15 @@ export type MemoAsyncResult<T> =
 
 export const useMemoAsync = <T>(fn: () => Promise<T>, deps: DependencyList) => {
 	const [data, setData] = useState<MemoAsyncResult<T>>({ status: "loading" });
+	const isMounted = useRef(true);
 	const calledCount = useRef(0);
+
+	useEffect(() => {
+		isMounted.current = true;
+		return () => {
+			isMounted.current = false;
+		};
+	}, []);
 
 	const update = useCallback(() => {
 		if (data.status !== "loading") {
@@ -26,6 +34,8 @@ export const useMemoAsync = <T>(fn: () => Promise<T>, deps: DependencyList) => {
 
 		fn()
 			.then((x) => {
+				if (!isMounted.current) return;
+
 				setData({ status: "ready", data: x });
 				if (calledCount.current > 1) {
 					update();
@@ -34,10 +44,6 @@ export const useMemoAsync = <T>(fn: () => Promise<T>, deps: DependencyList) => {
 			.finally(() => {
 				calledCount.current = 0;
 			});
-	}, deps);
-
-	useEffect(() => {
-		update();
 	}, deps);
 
 	return [data, update] as const;

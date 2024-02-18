@@ -1,4 +1,9 @@
-import React, { MouseEventHandler, useCallback, useRef } from "react";
+import React, {
+	MouseEventHandler,
+	useCallback,
+	useEffect,
+	useRef,
+} from "react";
 import { usePluginContext } from "../../hooks/appContext";
 import { getChildFiles, getParentFiles } from "../../utils/hierarchyBuilder";
 import { TFile } from "obsidian";
@@ -8,12 +13,19 @@ import { FileNodeProps } from "./types";
 import { FileNodeContent } from "./FileNodeContent";
 import { FileRelatives } from "./FileRelatives";
 
-export const FileNode = ({ file, kind, depth }: FileNodeProps) => {
+export const FileNode = ({
+	file,
+	kind,
+	parentBreadCrumps,
+	collapsedDepth,
+}: FileNodeProps) => {
 	const ctx = usePluginContext();
 	const updateRootFile = useUpdateRootFile();
 	const clickCount = useRef({ count: 0, timestamp: -1 });
 
 	const highlighted = ctx.highlighted.useIsCurrent(file.path);
+
+	const breadCrump = parentBreadCrumps.useChild(file.path);
 
 	const setHighlighted = useCallback(() => {
 		ctx.highlighted.set(file.path);
@@ -45,7 +57,7 @@ export const FileNode = ({ file, kind, depth }: FileNodeProps) => {
 		[file],
 	);
 
-	const expandId = `${file.path}::${kind}::${depth}`;
+	const expandId = `${breadCrump.pathString}:${kind}`;
 
 	const expanded = ctx.expanded.useValue(expandId);
 
@@ -68,6 +80,12 @@ export const FileNode = ({ file, kind, depth }: FileNodeProps) => {
 		}
 	}, [kind, file, ctx]);
 
+	useEffect(() => {
+		if (collapsedDepth < 1) {
+			updateRelativeFiles();
+		}
+	}, [updateRelativeFiles, collapsedDepth]);
+
 	ctx.relativeFilesUpdater.useSubscribe(file.path, updateRelativeFiles);
 
 	const hasChildren =
@@ -77,7 +95,6 @@ export const FileNode = ({ file, kind, depth }: FileNodeProps) => {
 	return (
 		<div className={`file-node file-node_kind-${kind}`}>
 			<FileNodeContent
-				depth={depth}
 				file={file}
 				kind={kind}
 				onClick={onClick}
@@ -92,8 +109,11 @@ export const FileNode = ({ file, kind, depth }: FileNodeProps) => {
 					highlight={highlighted}
 					kind={kind}
 					onIndentHover={setHighlighted}
-					depth={depth + 1}
+					breadCrumps={breadCrump}
 					expanded={expanded}
+					collapsedDepth={
+						expanded ? collapsedDepth : collapsedDepth + 1
+					}
 				/>
 			) : null}
 		</div>

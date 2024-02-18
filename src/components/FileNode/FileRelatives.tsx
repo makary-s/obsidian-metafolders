@@ -3,6 +3,7 @@ import { TFile } from "obsidian";
 import { NodeKind } from "./types";
 import { FileNode } from "./FileNode";
 import { Collapsible } from "src/baseComponents/Collapsible";
+import { BreadCrumb } from "src/utils/bread-crumbs";
 
 export const FileRelatives = ({
 	files,
@@ -10,16 +11,18 @@ export const FileRelatives = ({
 	onIndentHover,
 	highlight,
 	hasIndent,
-	depth,
+	breadCrumps,
 	expanded,
+	collapsedDepth,
 }: {
 	files: TFile[];
 	kind: NodeKind;
 	onIndentHover?: (hovered: boolean) => void;
 	highlight: boolean;
 	hasIndent: boolean;
-	depth: number;
+	breadCrumps: BreadCrumb;
 	expanded: boolean;
+	collapsedDepth: number;
 }) => {
 	const onMouseEnter = useCallback(() => {
 		onIndentHover?.(true);
@@ -56,7 +59,8 @@ export const FileRelatives = ({
 						file={child}
 						key={child.path}
 						kind={kind}
-						depth={depth}
+						parentBreadCrumps={breadCrumps}
+						collapsedDepth={collapsedDepth}
 					/>
 				))}
 			</Collapsible>

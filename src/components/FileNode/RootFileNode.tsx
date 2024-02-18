@@ -1,4 +1,9 @@
-import React, { MouseEventHandler, useCallback } from "react";
+import React, {
+	MouseEventHandler,
+	useCallback,
+	useEffect,
+	useMemo,
+} from "react";
 import { usePluginContext } from "../../hooks/appContext";
 import { getChildFiles, getParentFiles } from "../../utils/hierarchyBuilder";
 import { TFile } from "obsidian";
@@ -6,6 +11,7 @@ import { useMemoAsync } from "../../hooks/useMemoAsync";
 import { useUpdateRootFile } from "../../hooks/useUpdateRootFile";
 import { FileNodeContent } from "./FileNodeContent";
 import { FileRelatives } from "./FileRelatives";
+import { BreadCrumb } from "src/utils/bread-crumbs";
 
 export const RootFileNode = ({ file }: { file: TFile }) => {
 	const ctx = usePluginContext();
@@ -46,6 +52,16 @@ export const RootFileNode = ({ file }: { file: TFile }) => {
 	ctx.relativeFilesUpdater.useSubscribe(file.path, updateParentFilesAsync);
 	ctx.relativeFilesUpdater.useSubscribe(file.path, updateChildFilesAsync);
 
+	useEffect(() => {
+		updateParentFilesAsync();
+		updateChildFilesAsync();
+	}, [updateParentFilesAsync, updateChildFilesAsync]);
+
+	const breadCrumps = useMemo(
+		() => BreadCrumb.createRoot(file.path),
+		[file.path],
+	);
+
 	if (
 		parentFilesAsync.status === "loading" ||
 		childFilesAsync.status === "loading"
@@ -61,12 +77,13 @@ export const RootFileNode = ({ file }: { file: TFile }) => {
 				highlight={highlighted}
 				kind="parent"
 				onIndentHover={onIndentHover}
-				depth={0}
+				breadCrumps={breadCrumps}
 				expanded
+				collapsedDepth={0}
 			/>
 
 			<FileNodeContent
-				depth={0}
+				hasIndent={false}
 				file={file}
 				kind={"root"}
 				onClick={onClick}
@@ -78,8 +95,9 @@ export const RootFileNode = ({ file }: { file: TFile }) => {
 				highlight={highlighted}
 				kind="child"
 				onIndentHover={onIndentHover}
-				depth={0}
+				breadCrumps={breadCrumps}
 				expanded
+				collapsedDepth={0}
 			/>
 		</div>
 	);

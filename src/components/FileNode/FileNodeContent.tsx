@@ -17,7 +17,7 @@ import {
 export const FileNodeContent = ({
 	file,
 	kind,
-	depth,
+	hasIndent = true,
 	expanded,
 	hasChildren,
 	toggleExpand,
@@ -25,7 +25,7 @@ export const FileNodeContent = ({
 }: {
 	file: TFile;
 	kind: NodeKind | "root";
-	depth: number;
+	hasIndent?: boolean;
 	hasChildren?: boolean;
 	expanded?: boolean;
 	toggleExpand?: MouseEventHandler<HTMLElement>;
@@ -80,7 +80,7 @@ export const FileNodeContent = ({
 
 			setLinked(checkHasParent(ctx, currentFile, file.basename));
 		},
-		[setLinkIcon, file, isLinked],
+		[file, isLinked],
 	);
 
 	const isPrev = ctx.history.checkPreviousFile(file);
@@ -91,7 +91,7 @@ export const FileNodeContent = ({
 				"file-node__container",
 				highlighted ? "file-node__container_highlight" : "",
 				`file-node__container_kind-${kind}`,
-				depth === 0 ? "" : "file-node__container_indented",
+				hasIndent ? "file-node__container_indented" : "",
 			]
 				.filter(Boolean)
 				.join(" ")}

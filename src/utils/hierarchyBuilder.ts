@@ -141,6 +141,10 @@ export const addParentLink = async (
 	const checkLinked = () =>
 		checkHasParent(ctx, p.file, p.linkedFile.basename);
 
+	const eventRef = ctx.app.metadataCache.on("resolved", () => {
+		if (checkLinked()) finished.resolve();
+	});
+
 	ctx.app.fileManager.processFrontMatter(p.file, (frontMatter) => {
 		const newValue = `[[${p.linkedFile.basename}]]`;
 
@@ -157,10 +161,6 @@ export const addParentLink = async (
 
 		ctx.relativeFilesUpdater.addToUpdateQueue(p.file.path);
 		ctx.relativeFilesUpdater.addToUpdateQueue(p.linkedFile.path);
-	});
-
-	const eventRef = ctx.app.metadataCache.on("resolved", () => {
-		if (checkLinked()) finished.resolve();
 	});
 
 	await finished;
@@ -180,6 +180,10 @@ export const removeParentLink = async (
 	const checkLinked = () =>
 		checkHasParent(ctx, p.file, p.linkedFile.basename);
 
+	const eventRef = ctx.app.metadataCache.on("resolved", () => {
+		if (!checkLinked()) finished.resolve();
+	});
+
 	ctx.app.fileManager.processFrontMatter(p.file, (frontMatter) => {
 		const newValue = `[[${p.linkedFile.basename}]]`;
 
@@ -196,10 +200,6 @@ export const removeParentLink = async (
 
 		ctx.relativeFilesUpdater.addToUpdateQueue(p.file.path);
 		ctx.relativeFilesUpdater.addToUpdateQueue(p.linkedFile.path);
-	});
-
-	const eventRef = ctx.app.metadataCache.on("resolved", () => {
-		if (!checkLinked()) finished.resolve();
 	});
 
 	await finished;
