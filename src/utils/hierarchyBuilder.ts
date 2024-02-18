@@ -124,11 +124,13 @@ export const checkHasParent = (
 
 	if (!frontmatter) return false;
 
-	return Boolean(
-		frontmatter[ctx.settings.parentPropName]?.includes(
-			`[[${linkFile.basename}]]`,
-		),
-	);
+	const prop = frontmatter[ctx.settings.parentPropName];
+
+	if (Array.isArray(prop)) {
+		return prop.includes(`[[${linkFile.basename}]]`);
+	} else {
+		return prop === `[[${linkFile.basename}]]`;
+	}
 };
 
 export const checkActiveFileHasParent = (
@@ -139,6 +141,17 @@ export const checkActiveFileHasParent = (
 	if (!currentFile) return false;
 
 	return checkHasParent(ctx, currentFile, linkFile);
+};
+
+const getNormalizedFrontmatterArray = (frontmatter: any, propName: string) => {
+	const prop = frontmatter[propName];
+	if (prop === undefined || prop === null) {
+		frontmatter[propName] = [];
+	} else if (Array.isArray(prop) === false) {
+		frontmatter[propName] = [prop];
+	}
+
+	return frontmatter[propName];
 };
 
 export const addParentLink = async (
@@ -164,11 +177,10 @@ export const addParentLink = async (
 			return;
 		}
 
-		if (frontMatter[ctx.settings.parentPropName]) {
-			frontMatter[ctx.settings.parentPropName] ??= [];
-
-			frontMatter[ctx.settings.parentPropName].push(newValue);
-		}
+		getNormalizedFrontmatterArray(
+			frontMatter,
+			ctx.settings.parentPropName,
+		).push(newValue);
 
 		ctx.relativeFilesUpdater.addToUpdateQueue(p.file.path);
 		ctx.relativeFilesUpdater.addToUpdateQueue(p.linkedFile.path);
@@ -202,10 +214,14 @@ export const removeParentLink = async (
 			return;
 		}
 
-		const index =
-			frontMatter[ctx.settings.parentPropName].indexOf(newValue);
+		const prop = getNormalizedFrontmatterArray(
+			frontMatter,
+			ctx.settings.parentPropName,
+		);
+
+		const index = prop.indexOf(newValue);
 		if (index !== -1) {
-			frontMatter[ctx.settings.parentPropName].splice(index, 1);
+			prop.splice(index, 1);
 		}
 
 		ctx.relativeFilesUpdater.addToUpdateQueue(p.file.path);
