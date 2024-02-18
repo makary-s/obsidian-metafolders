@@ -10,9 +10,30 @@ import { ObsIcon } from "../../baseComponents/ObsIcon";
 import { NodeKind } from "./types";
 import {
 	addParentLink,
-	checkHasParent,
+	checkActiveFileHasParent,
 	removeParentLink,
 } from "src/utils/hierarchyBuilder";
+import { PluginContext } from "src/context";
+
+const useIsLinked = (ctx: PluginContext, file: TFile) => {
+	const currentIsLinked = checkActiveFileHasParent(ctx, file);
+
+	const [oldIsLinked, setIsLinked] = useState(currentIsLinked);
+
+	useEffect(() => {
+		setIsLinked(currentIsLinked);
+	}, [currentIsLinked]);
+
+	const updateIsLinked = useCallback(() => {
+		const newIsLinked = checkActiveFileHasParent(ctx, file);
+
+		if (oldIsLinked !== newIsLinked) {
+			setIsLinked(newIsLinked);
+		}
+	}, [setIsLinked]);
+
+	return [currentIsLinked, updateIsLinked] as const;
+};
 
 export const FileNodeContent = ({
 	file,
@@ -33,8 +54,6 @@ export const FileNodeContent = ({
 }) => {
 	const ctx = usePluginContext();
 
-	const currentFile = ctx.app.workspace.getActiveFile();
-
 	const isCurrent = ctx.currentFile.useIsCurrent(file.path);
 
 	const expanderIcon = hasChildren
@@ -47,40 +66,30 @@ export const FileNodeContent = ({
 
 	const highlighted = ctx.highlighted.useIsCurrent(file.path);
 
-	const [isLinked, setLinked] = useState(
-		currentFile ? checkHasParent(ctx, currentFile, file.basename) : false,
-	);
-
-	const [linkIcon, setLinkIcon] = useState(isLinked ? "unlink" : "link");
-
-	useEffect(() => {
-		setLinkIcon(isLinked ? "unlink" : "link");
-	}, [highlighted, isLinked]);
+	const [isLinked, updateIsLinked] = useIsLinked(ctx, file);
 
 	const handleToggleLink: MouseEventHandler<HTMLElement> = useCallback(
 		async (e) => {
 			e.stopPropagation();
 
-			const currentFile = ctx.app.workspace.getActiveFile();
-			if (!currentFile) return;
+			const activeFile = ctx.app.workspace.getActiveFile();
+			if (!activeFile) return;
 
-			if (isLinked) {
-				setLinked(false);
+			if (checkActiveFileHasParent(ctx, file)) {
 				await removeParentLink(ctx, {
-					file: currentFile,
+					file: activeFile,
 					linkedFile: file,
 				});
 			} else {
-				setLinked(true);
 				await addParentLink(ctx, {
-					file: currentFile,
+					file: activeFile,
 					linkedFile: file,
 				});
 			}
 
-			setLinked(checkHasParent(ctx, currentFile, file.basename));
+			updateIsLinked();
 		},
-		[file, isLinked],
+		[file],
 	);
 
 	const isPrev = ctx.history.checkPreviousFile(file);
@@ -114,7 +123,7 @@ export const FileNodeContent = ({
 			<div className="file-node__content-side">
 				{!isCurrent && (
 					<ObsIcon
-						kind={linkIcon}
+						kind={isLinked ? "unlink" : "link"}
 						onClick={handleToggleLink}
 						size="xs"
 					/>

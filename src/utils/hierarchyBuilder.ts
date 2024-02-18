@@ -118,15 +118,27 @@ export const getChildFiles = async (
 export const checkHasParent = (
 	ctx: PluginContext,
 	file: TFile,
-	linkPath: string,
+	linkFile: TFile,
 ): boolean => {
 	const frontmatter = ctx.app.metadataCache.getFileCache(file)?.frontmatter;
 
 	if (!frontmatter) return false;
 
 	return Boolean(
-		frontmatter[ctx.settings.parentPropName]?.includes(`[[${linkPath}]]`),
+		frontmatter[ctx.settings.parentPropName]?.includes(
+			`[[${linkFile.basename}]]`,
+		),
 	);
+};
+
+export const checkActiveFileHasParent = (
+	ctx: PluginContext,
+	linkFile: TFile,
+) => {
+	const currentFile = ctx.app.workspace.getActiveFile();
+	if (!currentFile) return false;
+
+	return checkHasParent(ctx, currentFile, linkFile);
 };
 
 export const addParentLink = async (
@@ -138,8 +150,7 @@ export const addParentLink = async (
 ): Promise<void> => {
 	const finished = createPromise<void>();
 
-	const checkLinked = () =>
-		checkHasParent(ctx, p.file, p.linkedFile.basename);
+	const checkLinked = () => checkHasParent(ctx, p.file, p.linkedFile);
 
 	const eventRef = ctx.app.metadataCache.on("resolved", () => {
 		if (checkLinked()) finished.resolve();
@@ -177,8 +188,7 @@ export const removeParentLink = async (
 ): Promise<void> => {
 	const finished = createPromise<void>();
 
-	const checkLinked = () =>
-		checkHasParent(ctx, p.file, p.linkedFile.basename);
+	const checkLinked = () => checkHasParent(ctx, p.file, p.linkedFile);
 
 	const eventRef = ctx.app.metadataCache.on("resolved", () => {
 		if (!checkLinked()) finished.resolve();
