@@ -5,31 +5,30 @@ import React, {
 	useRef,
 } from "react";
 import { usePluginContext } from "../../hooks/appContext";
-import { getChildFiles, getParentFiles } from "../../utils/hierarchyBuilder";
-import { TFile } from "obsidian";
-import { useMemoAsync } from "../../hooks/useMemoAsync";
 import { useUpdateRootFile } from "../../hooks/useUpdateRootFile";
 import { FileNodeProps } from "./types";
 import { FileNodeContent } from "./FileNodeContent";
 import { FileRelatives } from "./FileRelatives";
+import { useBreadCrumpChild } from "src/hooks/bread-crumbs";
+import { useHierarchyNodeRelatives } from "src/hooks/hierarchy";
 
 export const FileNode = ({
-	file,
+	node,
 	kind,
-	parentBreadCrumps,
+	parentBreadCrump: parentBreadCrumps,
 	collapsedDepth,
 }: FileNodeProps) => {
 	const ctx = usePluginContext();
 	const updateRootFile = useUpdateRootFile();
 	const clickCount = useRef({ count: 0, timestamp: -1 });
 
-	const highlighted = ctx.highlighted.useIsCurrent(file.path);
+	const highlighted = ctx.highlighted.useIsCurrent(node.key);
 
-	const breadCrump = parentBreadCrumps.useChild(file.path);
+	const breadCrump = useBreadCrumpChild(parentBreadCrumps, node.key);
 
 	const setHighlighted = useCallback(() => {
-		ctx.highlighted.set(file.path);
-	}, [file.path]);
+		ctx.highlighted.set(node.key);
+	}, [node.key]);
 
 	const onClick: MouseEventHandler<HTMLDivElement> = useCallback(
 		(e) => {
@@ -41,7 +40,7 @@ export const FileNode = ({
 				if (now - clickCount.current.timestamp < 300) {
 					clickCount.current.count = 0;
 					clickCount.current.timestamp = 0;
-					updateRootFile(file);
+					updateRootFile(node.data);
 				} else {
 					clickCount.current.count = 1;
 					clickCount.current.timestamp = now;
@@ -50,11 +49,11 @@ export const FileNode = ({
 				clickCount.current.count = 1;
 				clickCount.current.timestamp = Date.now();
 			}
-			ctx.app.workspace.openLinkText(file.path, "", isNewTab, {
+			ctx.app.workspace.openLinkText(node.data.path, "", isNewTab, {
 				active: true,
 			});
 		},
-		[file],
+		[node],
 	);
 
 	const expandId = `${breadCrump.pathString}:${kind}`;
@@ -69,16 +68,10 @@ export const FileNode = ({
 		[expandId],
 	);
 
-	const [relativeFilesAsync, updateRelativeFiles] = useMemoAsync<
-		TFile[]
-	>(async () => {
-		switch (kind) {
-			case "parent":
-				return getParentFiles(ctx, file);
-			case "child":
-				return getChildFiles(ctx, file);
-		}
-	}, [kind, file, ctx]);
+	const [relativeFilesAsync, updateRelativeFiles] = useHierarchyNodeRelatives(
+		node,
+		kind,
+	);
 
 	useEffect(() => {
 		if (collapsedDepth < 1) {
@@ -86,7 +79,7 @@ export const FileNode = ({
 		}
 	}, [updateRelativeFiles, collapsedDepth]);
 
-	ctx.relativeFilesUpdater.useSubscribe(file.path, updateRelativeFiles);
+	ctx.relativeFilesUpdater.useSubscribe(node.data.path, updateRelativeFiles);
 
 	const hasChildren =
 		relativeFilesAsync.status !== "loading" &&
@@ -95,7 +88,7 @@ export const FileNode = ({
 	return (
 		<div className={`file-node file-node_kind-${kind}`}>
 			<FileNodeContent
-				file={file}
+				file={node.data}
 				kind={kind}
 				onClick={onClick}
 				hasChildren={hasChildren}
@@ -104,7 +97,7 @@ export const FileNode = ({
 			/>
 			{relativeFilesAsync.status === "ready" ? (
 				<FileRelatives
-					files={relativeFilesAsync.data}
+					nodes={relativeFilesAsync.data}
 					hasIndent
 					highlight={highlighted}
 					kind={kind}

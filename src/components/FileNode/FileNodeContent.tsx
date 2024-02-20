@@ -8,12 +8,13 @@ import { usePluginContext } from "../../hooks/appContext";
 import { TFile } from "obsidian";
 import { ObsIcon } from "../../baseComponents/ObsIcon";
 import { NodeKind } from "./types";
+
+import { PluginContext } from "src/context";
 import {
 	addParentLink,
 	checkActiveFileHasParent,
 	removeParentLink,
-} from "src/utils/hierarchyBuilder";
-import { PluginContext } from "src/context";
+} from "src/utils/hierarchy";
 
 const useIsLinked = (ctx: PluginContext, file: TFile) => {
 	const currentIsLinked = checkActiveFileHasParent(ctx, file);

@@ -1,16 +1,18 @@
-import { TFile } from "obsidian";
+import { App, TFile } from "obsidian";
 import { getFileBacklinks, getFileByPath } from "./obsidian";
 import { PluginContext } from "src/context";
 import { createPromise } from "./basic";
+import { HierarchyImpl } from "src/models/hierarchy/impl";
 
-const checkHasPropByPosition = async (
-	ctx: PluginContext,
-	file: TFile,
-	startOffset: number,
-): Promise<boolean> => {
-	const content = await ctx.app.vault.read(file);
+const checkHasPropByPosition = async (p: {
+	app: App;
+	file: TFile;
+	startOffset: number;
+	parentPropName: string;
+}): Promise<boolean> => {
+	const content = await p.app.vault.read(p.file);
 
-	let currentIndex = startOffset - 1;
+	let currentIndex = p.startOffset - 1;
 	const lineChars = [] as string[];
 
 	while (currentIndex >= 0) {
@@ -25,26 +27,25 @@ const checkHasPropByPosition = async (
 
 	// FIXME false positive matches are possible
 	return Boolean(
-		line.match(
-			RegExp(`(^\\s*-?\\s*|\\[)${ctx.settings.parentPropName}::\\s*`),
-		),
+		line.match(RegExp(`(^\\s*-?\\s*|\\[)${p.parentPropName}::\\s*`)),
 	);
 };
 
-export const getParentFiles = async (
-	ctx: PluginContext,
-	file: TFile,
-): Promise<TFile[]> => {
+export const getParentFiles = async (p: {
+	app: App;
+	file: TFile;
+	parentPropName: string;
+}): Promise<TFile[]> => {
 	const result = [] as TFile[];
 
-	const metadata = ctx.app.metadataCache.getFileCache(file);
+	const metadata = p.app.metadataCache.getFileCache(p.file);
 
 	const frontMatterLinks = metadata?.frontmatterLinks;
 
 	if (frontMatterLinks) {
 		for (const item of frontMatterLinks) {
-			if (item.key.split(".")[0] === ctx.settings.parentPropName) {
-				const linkedFile = getFileByPath(ctx, item.link);
+			if (item.key.split(".")[0] === p.parentPropName) {
+				const linkedFile = getFileByPath(p.app, item.link);
 				if (linkedFile) {
 					result.push(linkedFile);
 				}
@@ -57,13 +58,14 @@ export const getParentFiles = async (
 	if (links) {
 		for (const item of links) {
 			if (
-				await checkHasPropByPosition(
-					ctx,
-					file,
-					item.position.start.offset,
-				)
+				await checkHasPropByPosition({
+					app: p.app,
+					parentPropName: p.parentPropName,
+					file: p.file,
+					startOffset: item.position.start.offset,
+				})
 			) {
-				const linkedFile = getFileByPath(ctx, item.link);
+				const linkedFile = getFileByPath(p.app, item.link);
 				if (linkedFile) {
 					result.push(linkedFile);
 				}
@@ -74,13 +76,14 @@ export const getParentFiles = async (
 	return result;
 };
 
-export const getChildFiles = async (
-	ctx: PluginContext,
-	file: TFile,
-): Promise<TFile[]> => {
+export const getChildFiles = async (p: {
+	app: App;
+	file: TFile;
+	parentPropName: string;
+}): Promise<TFile[]> => {
 	const childFiles: TFile[] = [];
 
-	const backlinks = getFileBacklinks(ctx, file);
+	const backlinks = getFileBacklinks(p.app, p.file);
 
 	for (const [childPath, childLinks] of Object.entries(backlinks)) {
 		for (const childLink of childLinks) {
@@ -88,22 +91,23 @@ export const getChildFiles = async (
 			if ("key" in childLink && childLink.key) {
 				const [childLinkKey] = childLink.key.split(".");
 
-				if (childLinkKey === ctx.settings.parentPropName) {
-					const childFile = getFileByPath(ctx, childPath);
+				if (childLinkKey === p.parentPropName) {
+					const childFile = getFileByPath(p.app, childPath);
 					if (childFile) {
 						childFiles.push(childFile);
 					}
 				}
 				// if inline
 			} else if ("position" in childLink) {
-				const childFile = getFileByPath(ctx, childPath);
+				const childFile = getFileByPath(p.app, childPath);
 				if (
 					childFile &&
-					(await checkHasPropByPosition(
-						ctx,
-						childFile,
-						childLink.position.start.offset,
-					))
+					(await checkHasPropByPosition({
+						app: p.app,
+						file: childFile,
+						startOffset: childLink.position.start.offset,
+						parentPropName: p.parentPropName,
+					}))
 				) {
 					childFiles.push(childFile);
 				}
@@ -181,9 +185,6 @@ export const addParentLink = async (
 			frontMatter,
 			ctx.settings.parentPropName,
 		).push(newValue);
-
-		ctx.relativeFilesUpdater.addToUpdateQueue(p.file.path);
-		ctx.relativeFilesUpdater.addToUpdateQueue(p.linkedFile.path);
 	});
 
 	await finished;
@@ -224,11 +225,30 @@ export const removeParentLink = async (
 			prop.splice(index, 1);
 		}
 
-		ctx.relativeFilesUpdater.addToUpdateQueue(p.file.path);
-		ctx.relativeFilesUpdater.addToUpdateQueue(p.linkedFile.path);
+		// ctx.relativeFilesUpdater.addToUpdateQueue(p.file.path);
+		// ctx.relativeFilesUpdater.addToUpdateQueue(p.linkedFile.path);
 	});
 
 	await finished;
 
 	ctx.app.metadataCache.offref(eventRef);
 };
+
+export const createFileHierarchyImpl = (
+	ctx: PluginContext,
+): HierarchyImpl<TFile> => ({
+	getChildren: async (file) =>
+		getChildFiles({
+			app: ctx.app,
+			file,
+			parentPropName: ctx.settings.parentPropName,
+		}),
+	getParents: async (file) =>
+		getParentFiles({
+			app: ctx.app,
+			file,
+			parentPropName: ctx.settings.parentPropName,
+		}),
+	getDataByKey: (key) => getFileByPath(ctx.app, key),
+	getKey: (file) => file.path,
+});

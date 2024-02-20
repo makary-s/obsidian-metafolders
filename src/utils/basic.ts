@@ -20,3 +20,18 @@ export const createPromise = <T>(): Promise<T> & {
 
 	return Object.assign(promise, { resolve: resolve!, reject: reject! });
 };
+
+/** Returns added and deleted values */
+export const getSetDiff = <T>(oldSet: Set<T>, newSet: Set<T>): Set<T> => {
+	const updated = new Set([...oldSet]);
+
+	for (const newItem of newSet.values()) {
+		if (updated.has(newItem)) {
+			updated.delete(newItem);
+		} else {
+			updated.add(newItem);
+		}
+	}
+
+	return updated;
+};

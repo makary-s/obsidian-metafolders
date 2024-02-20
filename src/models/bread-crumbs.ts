@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-
 export type BreadCrumbProps = Readonly<{
 	current: string;
 	parent: BreadCrumb | null;
@@ -57,14 +55,4 @@ export class BreadCrumb {
 			this.p.parent.deleteChild(this.p.current);
 		}
 	}
-
-	useChild = (path: string): BreadCrumb => {
-		const breadCrump = this.detChild(path);
-
-		useEffect(() => {
-			() => breadCrump.delete();
-		}, [breadCrump]);
-
-		return breadCrump;
-	};
 }

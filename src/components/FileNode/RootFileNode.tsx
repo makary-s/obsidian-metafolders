@@ -5,13 +5,12 @@ import React, {
 	useMemo,
 } from "react";
 import { usePluginContext } from "../../hooks/appContext";
-import { getChildFiles, getParentFiles } from "../../utils/hierarchyBuilder";
 import { TFile } from "obsidian";
-import { useMemoAsync } from "../../hooks/useMemoAsync";
 import { useUpdateRootFile } from "../../hooks/useUpdateRootFile";
 import { FileNodeContent } from "./FileNodeContent";
 import { FileRelatives } from "./FileRelatives";
-import { BreadCrumb } from "src/utils/bread-crumbs";
+import { BreadCrumb } from "src/models/bread-crumbs";
+import { useHierarchyNodeRelatives } from "src/hooks/hierarchy";
 
 export const RootFileNode = ({ file }: { file: TFile }) => {
 	const ctx = usePluginContext();
@@ -37,20 +36,20 @@ export const RootFileNode = ({ file }: { file: TFile }) => {
 		[file],
 	);
 
-	const [parentFilesAsync, updateParentFilesAsync] = useMemoAsync<
-		TFile[]
-	>(async () => {
-		return getParentFiles(ctx, file);
-	}, [file, ctx]);
+	const hierarchyNode = useMemo(() => {
+		return ctx.hierarchy.getNode(file.path);
+	}, [file.path]);
 
-	const [childFilesAsync, updateChildFilesAsync] = useMemoAsync<
-		TFile[]
-	>(async () => {
-		return getChildFiles(ctx, file);
-	}, [file, ctx]);
+	const [childFilesAsync, updateChildFilesAsync] = useHierarchyNodeRelatives(
+		hierarchyNode,
+		"child",
+	);
 
-	ctx.relativeFilesUpdater.useSubscribe(file.path, updateParentFilesAsync);
-	ctx.relativeFilesUpdater.useSubscribe(file.path, updateChildFilesAsync);
+	const [parentFilesAsync, updateParentFilesAsync] =
+		useHierarchyNodeRelatives(hierarchyNode, "parent");
+
+	// ctx.relativeFilesUpdater.useSubscribe(file.path, updateParentFilesAsync);
+	// ctx.relativeFilesUpdater.useSubscribe(file.path, updateChildFilesAsync);
 
 	useEffect(() => {
 		updateParentFilesAsync();
@@ -72,7 +71,7 @@ export const RootFileNode = ({ file }: { file: TFile }) => {
 	return (
 		<div className="file-node">
 			<FileRelatives
-				files={parentFilesAsync.data}
+				nodes={parentFilesAsync.data}
 				hasIndent={false}
 				highlight={highlighted}
 				kind="parent"
@@ -90,7 +89,7 @@ export const RootFileNode = ({ file }: { file: TFile }) => {
 			/>
 
 			<FileRelatives
-				files={childFilesAsync.data}
+				nodes={childFilesAsync.data}
 				hasIndent={false}
 				highlight={highlighted}
 				kind="child"

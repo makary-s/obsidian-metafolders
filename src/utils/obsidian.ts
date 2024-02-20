@@ -1,17 +1,18 @@
-import { LinkCache, TFile } from "obsidian";
-import { PluginContext } from "src/context";
+import { App, LinkCache, TFile } from "obsidian";
 
 export const getFileByPath = (
-	ctx: PluginContext,
+	app: App,
 	path: string,
 	sourcePath = "",
-) => {
-	return ctx.app.metadataCache.getFirstLinkpathDest(path, sourcePath);
+): TFile | undefined => {
+	return (
+		app.metadataCache.getFirstLinkpathDest(path, sourcePath) ?? undefined
+	);
 };
 
 export const getFileBacklinks = (
-	ctx: PluginContext,
+	app: App,
 	file: TFile,
 ): Record<string, LinkCache[]> => {
-	return ctx.app.metadataCache.getBacklinksForFile(file).data;
+	return app.metadataCache.getBacklinksForFile(file).data;
 };

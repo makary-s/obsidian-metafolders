@@ -40,21 +40,23 @@ export default class HierarchyView extends ItemView {
 			settings: this.settings,
 		});
 
-		this.app.workspace.on("active-leaf-change", (leaf) => {
-			if (leaf === null) return;
+		this.registerEvent(
+			this.app.workspace.on("active-leaf-change", (leaf) => {
+				if (leaf === null) return;
 
-			const viewState = leaf.getViewState();
+				const viewState = leaf.getViewState();
 
-			if (viewState.type === "markdown") {
-				const newFile = ctx.app.workspace.getActiveFile();
-				ctx.currentFile.set(newFile?.path ?? null);
-			}
-		});
+				if (viewState.type === "markdown") {
+					const newFile = ctx.app.workspace.getActiveFile();
+					ctx.currentFile.set(newFile?.path ?? null);
+				}
+			}),
+		);
 
 		// TODO: add `registerEvent` everywhere
 		this.registerEvent(
-			this.app.metadataCache.on("resolved", () => {
-				ctx.relativeFilesUpdater.updateQueue();
+			this.app.metadataCache.on("resolve", async (file) => {
+				ctx.hierarchy.getNode(file.path).updateRelatives();
 			}),
 		);
 

@@ -1,12 +1,13 @@
 import React, { useCallback } from "react";
-import { TFile } from "obsidian";
 import { NodeKind } from "./types";
 import { FileNode } from "./FileNode";
 import { Collapsible } from "src/baseComponents/Collapsible";
-import { BreadCrumb } from "src/utils/bread-crumbs";
+import { BreadCrumb } from "src/models/bread-crumbs";
+import { HierarchyNode } from "src/models/hierarchy/node";
+import { TFile } from "obsidian";
 
 export const FileRelatives = ({
-	files,
+	nodes,
 	kind,
 	onIndentHover,
 	highlight,
@@ -15,7 +16,7 @@ export const FileRelatives = ({
 	expanded,
 	collapsedDepth,
 }: {
-	files: TFile[];
+	nodes: HierarchyNode<TFile>[];
 	kind: NodeKind;
 	onIndentHover?: (hovered: boolean) => void;
 	highlight: boolean;
@@ -54,12 +55,12 @@ export const FileRelatives = ({
 				expanded={expanded}
 				className="file-node__relatives-container"
 			>
-				{files.map((child) => (
+				{nodes.map((child) => (
 					<FileNode
-						file={child}
-						key={child.path}
+						node={child}
+						key={child.data.path}
 						kind={kind}
-						parentBreadCrumps={breadCrumps}
+						parentBreadCrump={breadCrumps}
 						collapsedDepth={collapsedDepth}
 					/>
 				))}

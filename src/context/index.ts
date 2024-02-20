@@ -2,6 +2,8 @@ import { App, TFile } from "obsidian";
 import { PluginSettings } from "src/types";
 import { CurrentChecker, Updater, Value, ValueCollection } from "./helpers";
 import { FilesHistory } from "./history";
+import { Hierarchy } from "src/models/hierarchy";
+import { createFileHierarchyImpl } from "src/utils/hierarchy";
 
 export class PluginContext {
 	app: App;
@@ -14,6 +16,7 @@ export class PluginContext {
 	highlighted: CurrentChecker;
 	history: FilesHistory;
 	expanded: ValueCollection<boolean>;
+	hierarchy: Hierarchy<TFile>;
 
 	constructor(p: Pick<PluginContext, "app" | "settings">) {
 		this.app = p.app;
@@ -34,5 +37,9 @@ export class PluginContext {
 		this.history = new FilesHistory();
 
 		this.expanded = new ValueCollection(false);
+
+		this.hierarchy = Hierarchy.create({
+			impl: createFileHierarchyImpl(this),
+		});
 	}
 }
