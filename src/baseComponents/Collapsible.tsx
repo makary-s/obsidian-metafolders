@@ -35,7 +35,10 @@ export const Collapsible = ({
 				totalHeight += child.scrollHeight;
 			}
 
-			const transitionDuration = Math.floor(msPerPx * totalHeight);
+			const transitionDuration = Math.max(
+				50,
+				Math.min(1000, Math.floor(msPerPx * totalHeight)),
+			);
 
 			elRef.current.style.transition = `max-height ${transitionDuration}ms`;
 
