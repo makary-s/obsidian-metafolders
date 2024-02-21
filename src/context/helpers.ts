@@ -1,46 +1,5 @@
-import { DependencyList, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getMapDefault } from "src/utils/basic";
-
-export class Updater {
-	private callbacks = new Map<string, Set<() => void>>();
-	private queue = new Set<string>();
-
-	update(id: string) {
-		this.callbacks.get(id)?.forEach((fn) => fn());
-		this.queue.delete(id);
-	}
-
-	updateQueue() {
-		this.queue.forEach((currentId) => {
-			this.update(currentId);
-		});
-	}
-
-	addToUpdateQueue(id: string): void {
-		this.queue.add(id);
-	}
-
-	useSubscribe(
-		id: string,
-		update: () => void,
-		deps: DependencyList = [update],
-	) {
-		useEffect(() => {
-			const current =
-				this.callbacks.get(id) ??
-				this.callbacks.set(id, new Set()).get(id)!;
-
-			current.add(update);
-
-			return () => {
-				this.callbacks.get(id)?.delete(update);
-				if (this.callbacks.size === 0) {
-					this.callbacks.delete(id);
-				}
-			};
-		}, [id, ...deps]);
-	}
-}
 
 const createEmptySet = <T>() => new Set<T>();
 

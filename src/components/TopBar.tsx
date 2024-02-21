@@ -41,9 +41,10 @@ export const TopBar = () => {
 	return (
 		<div className="top-panel">
 			<ObsIcon
-				kind={p.isAutoRefresh ? "refresh-cw" : "refresh-cw-off"}
+				kind={p.isAutoRefresh ? "pin-off" : "pin"}
 				size="s"
 				onClick={p.toggleAutoRefresh}
+				tooltip={p.isAutoRefresh ? "Pin root file" : "Unpin root file"}
 			/>
 			<div className="top-panel_history">
 				<ObsIcon
@@ -51,12 +52,14 @@ export const TopBar = () => {
 					kind={"arrow-left"}
 					size="s"
 					onClick={p.onUndo}
+					tooltip="Undo"
 				/>
 				<ObsIcon
 					disabled={!p.hasRedo}
 					kind={"arrow-right"}
 					size="s"
 					onClick={p.onRedo}
+					tooltip="Redo"
 				/>
 			</div>
 		</div>

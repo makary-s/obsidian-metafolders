@@ -1,6 +1,6 @@
 import { App, TFile } from "obsidian";
 import { PluginSettings } from "src/types";
-import { CurrentChecker, Updater, Value, ValueCollection } from "./helpers";
+import { CurrentChecker, Value, ValueCollection } from "./helpers";
 import { FilesHistory } from "./history";
 import { Hierarchy } from "src/models/hierarchy";
 import { createFileHierarchyImpl } from "src/utils/hierarchy";
@@ -10,7 +10,6 @@ export class PluginContext {
 	settings: PluginSettings;
 
 	currentFile: CurrentChecker;
-	relativeFilesUpdater: Updater;
 	rootFile: Value<null | TFile>;
 	isAutoRefresh: Value<boolean>;
 	highlighted: CurrentChecker;
@@ -25,8 +24,6 @@ export class PluginContext {
 		this.currentFile = new CurrentChecker(
 			this.app.workspace.getActiveFile()?.path,
 		);
-
-		this.relativeFilesUpdater = new Updater();
 
 		this.rootFile = new Value<null | TFile>(null);
 

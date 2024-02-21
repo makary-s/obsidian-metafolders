@@ -63,6 +63,10 @@
 	justify-content: flex-end;
 }
 
+.mf-root {
+	padding: var(--size-2-2);
+}
+
 .file-node {
 	display: flex;
 	flex-direction: column;

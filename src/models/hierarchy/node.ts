@@ -93,6 +93,8 @@ export class HierarchyNode<T> {
 		const items = await this.fetchRelatives(relation);
 
 		const newItems = new Set(items.map((data) => this.p.impl.getKey(data)));
+		newItems.delete(this.key); // prevent self-reference
+
 		const updatedItems = getSetDiff(this.p.relatives[relation], newItems);
 
 		this.p.relatives[relation] = newItems;

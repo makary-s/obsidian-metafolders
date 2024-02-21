@@ -127,6 +127,9 @@ export const FileNodeContent = ({
 						kind={isLinked ? "unlink" : "link"}
 						onClick={handleToggleLink}
 						size="xs"
+						tooltip={
+							isLinked ? "Unlink active file" : "Link active file"
+						}
 					/>
 				)}
 			</div>

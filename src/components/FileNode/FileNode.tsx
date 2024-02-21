@@ -79,8 +79,6 @@ export const FileNode = ({
 		}
 	}, [updateRelativeFiles, collapsedDepth]);
 
-	ctx.relativeFilesUpdater.useSubscribe(node.data.path, updateRelativeFiles);
-
 	const hasChildren =
 		relativeFilesAsync.status !== "loading" &&
 		relativeFilesAsync.data.length !== 0;

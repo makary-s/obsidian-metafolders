@@ -23,5 +23,9 @@ export const MainView = () => {
 
 	if (!rootFile) return null;
 
-	return <RootFileNode file={rootFile} key={rootFile.path} />;
+	return (
+		<div className="mf-root">
+			<RootFileNode file={rootFile} key={rootFile.path} />
+		</div>
+	);
 };

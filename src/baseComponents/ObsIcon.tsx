@@ -6,9 +6,10 @@ export const ObsIcon = (props: {
 	disabled?: boolean;
 	className?: string;
 	size?: "xs" | "s" | "m" | "xl";
+	tooltip?: string;
 	onClick?: MouseEventHandler<HTMLElement>;
 }) => {
-	const { kind, className, disabled, size } = props;
+	const { kind, className, disabled, size, tooltip } = props;
 	const onClick = disabled ? undefined : props.onClick;
 
 	const ref = useRef<HTMLElement>(null);
@@ -26,5 +27,12 @@ export const ObsIcon = (props: {
 		className,
 	].join(" ");
 
-	return <span ref={ref} className={finalClassName} onClick={onClick} />;
+	return (
+		<span
+			title={tooltip}
+			ref={ref}
+			className={finalClassName}
+			onClick={onClick}
+		/>
+	);
 };
