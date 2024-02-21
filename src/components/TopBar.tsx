@@ -2,6 +2,7 @@ import React, { useCallback } from "react";
 import { ObsIcon } from "../baseComponents/ObsIcon";
 import { useUpdateRootFile } from "../hooks/useUpdateRootFile";
 import { usePluginContext } from "src/hooks/appContext";
+import { getFileByPath } from "src/utils/obsidian";
 
 const useProps = () => {
 	const ctx = usePluginContext();
@@ -37,9 +38,32 @@ const useProps = () => {
 
 export const TopBar = () => {
 	const p = useProps();
+	const ctx = usePluginContext();
+	const updateRootFile = useUpdateRootFile();
+	const homeFile = ctx.settings.homeFilePath
+		? getFileByPath(ctx.app, ctx.settings.homeFilePath)
+		: null;
 
 	return (
 		<div className="top-panel">
+			{homeFile ? (
+				<ObsIcon
+					kind="home"
+					size="s"
+					onClick={() => {
+						updateRootFile(homeFile);
+						ctx.app.workspace.openLinkText(
+							homeFile.path,
+							"",
+							false,
+							{
+								active: true,
+							},
+						);
+					}}
+					tooltip={`Go to "${ctx.settings.homeFilePath}"`}
+				/>
+			) : null}
 			<ObsIcon
 				kind={p.isAutoRefresh ? "pin-off" : "pin"}
 				size="s"

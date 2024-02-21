@@ -4,10 +4,13 @@ import { CurrentChecker, Value, ValueCollection } from "./helpers";
 import { FilesHistory } from "./history";
 import { Hierarchy } from "src/models/hierarchy";
 import { createFileHierarchyImpl } from "src/utils/hierarchy";
+import { getFileByPath } from "src/utils/obsidian";
 
 export class PluginContext {
 	app: App;
 	settings: PluginSettings;
+	// TODO create special class for settings
+	saveSettings: () => void;
 
 	currentFile: CurrentChecker;
 	rootFile: Value<null | TFile>;
@@ -17,15 +20,20 @@ export class PluginContext {
 	expanded: ValueCollection<boolean>;
 	hierarchy: Hierarchy<TFile>;
 
-	constructor(p: Pick<PluginContext, "app" | "settings">) {
+	constructor(p: Pick<PluginContext, "app" | "settings" | "saveSettings">) {
 		this.app = p.app;
 		this.settings = p.settings;
+		this.saveSettings = p.saveSettings;
 
 		this.currentFile = new CurrentChecker(
 			this.app.workspace.getActiveFile()?.path,
 		);
 
-		this.rootFile = new Value<null | TFile>(null);
+		this.rootFile = new Value<null | TFile>(
+			this.settings.rootFilePath
+				? getFileByPath(p.app, this.settings.rootFilePath) ?? null
+				: null,
+		);
 
 		this.isAutoRefresh = new Value<boolean>(false);
 

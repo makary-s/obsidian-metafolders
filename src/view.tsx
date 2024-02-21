@@ -6,18 +6,18 @@ import { TopBar } from "./components/TopBar";
 import { AppContext } from "./hooks/appContext";
 import { PLUGIN_ICON_NAME, PLUGIN_TITLE, PLUGIN_VIEW_ID } from "./constants";
 import { PluginContext } from "./context";
-import { PluginSettings } from "./types";
+import HierarchyViewPlugin from "main";
 
 export default class HierarchyView extends ItemView {
 	root: Root | null = null;
 	headerRoot: Root | null = null;
-	settings: PluginSettings;
+	plugin: HierarchyViewPlugin;
 	navigation = false;
 	icon = PLUGIN_ICON_NAME;
 
-	constructor(leaf: WorkspaceLeaf, settings: PluginSettings) {
+	constructor(leaf: WorkspaceLeaf, plugin: HierarchyViewPlugin) {
 		super(leaf);
-		this.settings = settings;
+		this.plugin = plugin;
 	}
 
 	getViewType() {
@@ -37,7 +37,8 @@ export default class HierarchyView extends ItemView {
 
 		const ctx = new PluginContext({
 			app: this.app,
-			settings: this.settings,
+			settings: this.plugin.settings,
+			saveSettings: this.plugin.saveSettings.bind(this.plugin),
 		});
 
 		this.registerEvent(

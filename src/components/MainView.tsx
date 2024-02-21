@@ -18,7 +18,7 @@ export const MainView = () => {
 				}
 			}
 		});
-		updateRootFile();
+		if (rootFile) updateRootFile();
 	}, [updateRootFile]);
 
 	if (!rootFile) return null;

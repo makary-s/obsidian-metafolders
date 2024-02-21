@@ -12,6 +12,9 @@ export const useUpdateRootFile = () => {
 		if (newFile && newFile.path !== rootFile?.path) {
 			ctx.rootFile.set(newFile);
 
+			ctx.settings.rootFilePath = newFile.path;
+			ctx.saveSettings();
+
 			if (shouldSaveHistory) {
 				ctx.history.push(newFile);
 			}

@@ -11,6 +11,8 @@ import HierarchyView from "src/view";
 
 const DEFAULT_SETTINGS: PluginSettings = {
 	parentPropName: "up",
+	rootFilePath: null,
+	homeFilePath: null,
 };
 
 export default class HierarchyViewPlugin extends Plugin {
@@ -21,7 +23,7 @@ export default class HierarchyViewPlugin extends Plugin {
 
 		this.registerView(
 			PLUGIN_VIEW_ID,
-			(leaf) => new HierarchyView(leaf, this.settings),
+			(leaf) => new HierarchyView(leaf, this),
 		);
 
 		this.addRibbonIcon(PLUGIN_ICON_NAME, PLUGIN_TITLE, () => {
@@ -75,14 +77,30 @@ class SettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Parent Property Name")
-			.setDesc("required")
+			.setDesc(
+				"Required. A property indicating the parent of the note. This will be used to build a hierarchy.",
+			)
 			.addText((text) =>
 				text
-					.setPlaceholder("Enter your secret")
 					.setValue(this.plugin.settings.parentPropName)
 					.onChange(async (value) => {
 						this.plugin.settings.parentPropName =
 							value || DEFAULT_SETTINGS.parentPropName;
+						await this.plugin.saveSettings();
+					}),
+			);
+
+		new Setting(containerEl)
+			.setName("Home file path")
+			.setDesc(
+				"Optional. A home note for which a quick access button will be created. Enter path relative to vault root.",
+			)
+			.addText((text) =>
+				text
+					.setValue(this.plugin.settings.homeFilePath ?? "")
+					.onChange(async (value) => {
+						this.plugin.settings.homeFilePath =
+							value || DEFAULT_SETTINGS.homeFilePath;
 						await this.plugin.saveSettings();
 					}),
 			);
