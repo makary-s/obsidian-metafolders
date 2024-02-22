@@ -25,17 +25,19 @@ export class PluginContext {
 		this.settings = p.settings;
 		this.saveSettings = p.saveSettings;
 
-		this.currentFile = new CurrentChecker(
-			this.app.workspace.getActiveFile()?.path,
-		);
+		const activeFile = this.app.workspace.getActiveFile();
+
+		this.currentFile = new CurrentChecker(activeFile?.path);
 
 		this.rootFile = new Value<null | TFile>(
 			this.settings.rootFilePath
 				? getFileByPath(p.app, this.settings.rootFilePath) ?? null
-				: null,
+				: activeFile
+					? activeFile
+					: null,
 		);
 
-		this.isAutoRefresh = new Value<boolean>(false);
+		this.isAutoRefresh = new Value<boolean>(this.rootFile ? false : true);
 
 		this.highlighted = new CurrentChecker(null);
 

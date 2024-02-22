@@ -52,20 +52,12 @@ export const TopBar = () => {
 					size="s"
 					onClick={() => {
 						updateRootFile(homeFile);
-						ctx.app.workspace.openLinkText(
-							homeFile.path,
-							"",
-							false,
-							{
-								active: true,
-							},
-						);
 					}}
 					tooltip={`Go to "${ctx.settings.homeFilePath}"`}
 				/>
 			) : null}
 			<ObsIcon
-				kind={p.isAutoRefresh ? "pin-off" : "pin"}
+				kind={p.isAutoRefresh ? "pin" : "pin-off"}
 				size="s"
 				onClick={p.toggleAutoRefresh}
 				tooltip={p.isAutoRefresh ? "Pin root file" : "Unpin root file"}

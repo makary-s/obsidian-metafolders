@@ -234,6 +234,26 @@ export const removeParentLink = async (
 	ctx.app.metadataCache.offref(eventRef);
 };
 
+export const updateRootFile = (
+	ctx: PluginContext,
+	newFile_?: TFile,
+	shouldSaveHistory = true,
+) => {
+	const rootFile = ctx.rootFile.get();
+
+	const newFile = newFile_ ?? ctx.app.workspace.getActiveFile();
+	if (newFile && newFile.path !== rootFile?.path) {
+		ctx.rootFile.set(newFile);
+
+		ctx.settings.rootFilePath = newFile.path;
+		ctx.saveSettings();
+
+		if (shouldSaveHistory) {
+			ctx.history.push(newFile);
+		}
+	}
+};
+
 export const createFileHierarchyImpl = (
 	ctx: PluginContext,
 ): HierarchyImpl<TFile> => ({
