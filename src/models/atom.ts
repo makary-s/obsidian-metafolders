@@ -13,12 +13,18 @@ export class Atom<T> {
 	}
 
 	set(value: T): void {
+		if (this.current === value) return;
+
 		this.current = value;
 		this.dispatchCallbacks();
 	}
 
 	setFn(setter: (current: T) => T): void {
-		this.current = setter(this.current);
+		const newValue = setter(this.current);
+
+		if (this.current === newValue) return;
+
+		this.current = newValue;
 		this.dispatchCallbacks();
 	}
 
@@ -51,13 +57,19 @@ export class AtomCollection<T> {
 	}
 
 	set(id: string, value: T): void {
+		if (this.get(id) === value) return;
+
 		this.current.set(id, value);
 
 		this.dispatchCallbacks(id);
 	}
 
 	setFn(id: string, setter: (current: T) => T): void {
-		this.current.set(id, setter(this.get(id)));
+		const newValue = setter(this.get(id));
+
+		if (this.get(id) === newValue) return;
+
+		this.current.set(id, newValue);
 
 		this.dispatchCallbacks(id);
 	}
@@ -71,6 +83,69 @@ export class AtomCollection<T> {
 
 		return () => {
 			this.callbacks.get(id)?.delete(callback);
+		};
+	}
+}
+
+export class AtomObject<T> {
+	private _current: T;
+	private propCallbacks = new Map<
+		PropertyKey,
+		Set<(value: T[keyof T]) => void>
+	>();
+	private callbacks = new Set<(key: keyof T) => void>();
+
+	constructor(obj: T) {
+		this._current = obj;
+	}
+
+	get current(): Readonly<T> {
+		return this._current;
+	}
+
+	private dispatchCallbacks(key: keyof T) {
+		this.callbacks.forEach((fn) => fn(key));
+		this.propCallbacks.get(key)?.forEach((fn) => fn(this._current[key]));
+	}
+
+	set<K extends keyof T>(key: K, value: T[K]): void {
+		if (this._current[key] === value) return;
+
+		this._current[key] = value;
+
+		this.dispatchCallbacks(key);
+	}
+
+	setFn<K extends keyof T>(key: K, setter: (value: T[K]) => T[K]): void {
+		const newValue = setter(this._current[key]);
+
+		if (this._current[key] === newValue) return;
+
+		this._current[key] = setter(this._current[key]);
+
+		this.dispatchCallbacks(key);
+	}
+
+	get<K extends keyof T>(key: K): T[K] {
+		return this._current[key];
+	}
+
+	subscribeProperty<K extends keyof T>(
+		key: K,
+		callback: (value: T[K]) => void,
+	): () => void {
+		getMapDefault(this.propCallbacks, key, createEmptySet).add(callback);
+
+		return () => {
+			this.propCallbacks.get(key)?.delete(callback);
+		};
+	}
+
+	subscribe(callback: (value: keyof T) => void): () => void {
+		this.callbacks.add(callback);
+
+		return () => {
+			this.callbacks.delete(callback);
 		};
 	}
 }

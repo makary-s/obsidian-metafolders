@@ -5,40 +5,46 @@ import { FilesHistory } from "./history";
 import { Hierarchy } from "src/models/hierarchy";
 import { createFileHierarchyImpl } from "src/utils/hierarchy";
 import { getFileByPath } from "src/utils/obsidian";
-import { Atom, AtomCollection } from "src/models/atom";
+import { AtomCollection, AtomObject } from "src/models/atom";
+import HierarchyViewPlugin from "main";
 
 export class PluginContext {
 	app: App;
-	settings: PluginSettings;
-	// TODO create special class for settings
-	saveSettings: () => void;
+	settings: AtomObject<PluginSettings>;
 
 	currentFile: CurrentChecker;
-	rootFile: Atom<null | TFile>;
-	isAutoRefresh: Atom<boolean>;
 	highlighted: CurrentChecker;
 	history: FilesHistory;
 	expanded: AtomCollection<boolean>;
 	hierarchy: Hierarchy<TFile>;
 
-	constructor(p: Pick<PluginContext, "app" | "settings" | "saveSettings">) {
-		this.app = p.app;
-		this.settings = p.settings;
-		this.saveSettings = p.saveSettings;
+	constructor(plugin: HierarchyViewPlugin, settings: PluginSettings) {
+		this.app = plugin.app;
+
+		this.settings = new AtomObject(settings);
+		this.settings.subscribe(() => plugin.saveData(this.settings.current));
 
 		const activeFile = this.app.workspace.getActiveFile();
 
 		this.currentFile = new CurrentChecker(activeFile?.path);
 
-		this.rootFile = new Atom<null | TFile>(
-			this.settings.rootFilePath
-				? getFileByPath(p.app, this.settings.rootFilePath) ?? null
-				: activeFile
-					? activeFile
-					: null,
-		);
+		// TODO: find a suitable event instead of a timeout
+		setTimeout(() => {
+			const rootFilePath = this.settings.get("rootFilePath");
+			const rootFile = rootFilePath
+				? getFileByPath(this.app, rootFilePath)
+				: null;
 
-		this.isAutoRefresh = new Atom<boolean>(this.rootFile ? false : true);
+			const currentActiveFile = this.app.workspace.getActiveFile();
+
+			if (!rootFile) {
+				if (currentActiveFile) {
+					this.settings.set("rootFilePath", currentActiveFile.path);
+				} else {
+					this.settings.set("isAutoRefresh", true);
+				}
+			}
+		}, 1000);
 
 		this.highlighted = new CurrentChecker(null);
 

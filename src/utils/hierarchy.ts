@@ -128,7 +128,7 @@ export const checkHasParent = (
 
 	if (!frontmatter) return false;
 
-	const prop = frontmatter[ctx.settings.parentPropName];
+	const prop = frontmatter[ctx.settings.get("parentPropName")];
 
 	if (Array.isArray(prop)) {
 		return prop.includes(`[[${linkFile.basename}]]`);
@@ -183,7 +183,7 @@ export const addParentLink = async (
 
 		getNormalizedFrontmatterArray(
 			frontMatter,
-			ctx.settings.parentPropName,
+			ctx.settings.get("parentPropName"),
 		).push(newValue);
 	});
 
@@ -217,16 +217,13 @@ export const removeParentLink = async (
 
 		const prop = getNormalizedFrontmatterArray(
 			frontMatter,
-			ctx.settings.parentPropName,
+			ctx.settings.get("parentPropName"),
 		);
 
 		const index = prop.indexOf(newValue);
 		if (index !== -1) {
 			prop.splice(index, 1);
 		}
-
-		// ctx.relativeFilesUpdater.addToUpdateQueue(p.file.path);
-		// ctx.relativeFilesUpdater.addToUpdateQueue(p.linkedFile.path);
 	});
 
 	await finished;
@@ -239,14 +236,11 @@ export const updateRootFile = (
 	newFile_?: TFile,
 	shouldSaveHistory = true,
 ) => {
-	const rootFile = ctx.rootFile.get();
+	const rootFilePath = ctx.settings.get("rootFilePath");
 
 	const newFile = newFile_ ?? ctx.app.workspace.getActiveFile();
-	if (newFile && newFile.path !== rootFile?.path) {
-		ctx.rootFile.set(newFile);
-
-		ctx.settings.rootFilePath = newFile.path;
-		ctx.saveSettings();
+	if (newFile && newFile.path !== rootFilePath) {
+		ctx.settings.set("rootFilePath", newFile.path);
 
 		if (shouldSaveHistory) {
 			ctx.history.push(newFile);
@@ -261,13 +255,13 @@ export const createFileHierarchyImpl = (
 		getChildFiles({
 			app: ctx.app,
 			file,
-			parentPropName: ctx.settings.parentPropName,
+			parentPropName: ctx.settings.get("parentPropName"),
 		}),
 	getParents: async (file) =>
 		getParentFiles({
 			app: ctx.app,
 			file,
-			parentPropName: ctx.settings.parentPropName,
+			parentPropName: ctx.settings.get("parentPropName"),
 		}),
 	getDataByKey: (key) => getFileByPath(ctx.app, key),
 	getKey: (file) => file.path,

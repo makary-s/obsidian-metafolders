@@ -37,3 +37,7 @@ export const getSetDiff = <T>(oldSet: Set<T>, newSet: Set<T>): Set<T> => {
 
 	return updated;
 };
+
+export const keys = <T extends Record<any, any>>(obj: T) => {
+	return Object.keys(obj) as Array<keyof T>;
+};

@@ -6,6 +6,7 @@ import {
 	WorkspaceLeaf,
 } from "obsidian";
 import { PLUGIN_ICON_NAME, PLUGIN_TITLE, PLUGIN_VIEW_ID } from "src/constants";
+import { PluginContext } from "src/context";
 import { PluginSettings } from "src/types";
 import HierarchyView from "src/view";
 
@@ -13,17 +14,24 @@ const DEFAULT_SETTINGS: PluginSettings = {
 	parentPropName: "up",
 	rootFilePath: null,
 	homeFilePath: null,
+	isAutoRefresh: false,
 };
 
 export default class HierarchyViewPlugin extends Plugin {
-	settings: PluginSettings;
+	ctx: PluginContext;
 
 	async onload() {
-		await this.loadSettings();
+		const settings: PluginSettings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			await this.loadData(),
+		);
+
+		this.ctx = new PluginContext(this, settings);
 
 		this.registerView(
 			PLUGIN_VIEW_ID,
-			(leaf) => new HierarchyView(leaf, this),
+			(leaf) => new HierarchyView(leaf, this.ctx),
 		);
 
 		this.addRibbonIcon(PLUGIN_ICON_NAME, PLUGIN_TITLE, () => {
@@ -48,18 +56,6 @@ export default class HierarchyViewPlugin extends Plugin {
 
 		workspace.revealLeaf(leaf);
 	}
-
-	async loadSettings() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			await this.loadData(),
-		);
-	}
-
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
 }
 
 class SettingTab extends PluginSettingTab {
@@ -78,15 +74,16 @@ class SettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Parent Property Name")
 			.setDesc(
-				"Required. A property indicating the parent of the note. This will be used to build a hierarchy.",
+				"Required. A property indicating the parent of the note. This will be used to build a hierarchy. To apply the changes correctly, it requires restarting the plugin or app after the change.",
 			)
 			.addText((text) =>
 				text
-					.setValue(this.plugin.settings.parentPropName)
+					.setValue(this.plugin.ctx.settings.get("parentPropName"))
 					.onChange(async (value) => {
-						this.plugin.settings.parentPropName =
-							value || DEFAULT_SETTINGS.parentPropName;
-						await this.plugin.saveSettings();
+						this.plugin.ctx.settings.set(
+							"parentPropName",
+							value || DEFAULT_SETTINGS.parentPropName,
+						);
 					}),
 			);
 
@@ -97,11 +94,14 @@ class SettingTab extends PluginSettingTab {
 			)
 			.addText((text) =>
 				text
-					.setValue(this.plugin.settings.homeFilePath ?? "")
+					.setValue(
+						this.plugin.ctx.settings.get("homeFilePath") ?? "",
+					)
 					.onChange(async (value) => {
-						this.plugin.settings.homeFilePath =
-							value || DEFAULT_SETTINGS.homeFilePath;
-						await this.plugin.saveSettings();
+						this.plugin.ctx.settings.set(
+							"homeFilePath",
+							value || DEFAULT_SETTINGS.homeFilePath,
+						);
 					}),
 			);
 	}

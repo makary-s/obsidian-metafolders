@@ -47,9 +47,6 @@ export const RootFileNode = ({ file }: { file: TFile }) => {
 	const [parentFilesAsync, updateParentFilesAsync] =
 		useHierarchyNodeRelatives(hierarchyNode, "parent");
 
-	// ctx.relativeFilesUpdater.useSubscribe(file.path, updateParentFilesAsync);
-	// ctx.relativeFilesUpdater.useSubscribe(file.path, updateChildFilesAsync);
-
 	useEffect(() => {
 		updateParentFilesAsync();
 		updateChildFilesAsync();
