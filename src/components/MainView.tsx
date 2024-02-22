@@ -1,25 +1,11 @@
-import React, { useEffect } from "react";
-import { usePluginContext } from "../hooks/appContext";
-import { useUpdateRootFile } from "src/hooks/useUpdateRootFile";
+import React from "react";
+import { usePluginContext } from "../hooks/context";
 import { RootFileNode } from "./FileNode/RootFileNode";
+import { useAtom } from "src/hooks/atom";
 
 export const MainView = () => {
 	const ctx = usePluginContext();
-	const rootFile = ctx.rootFile.useValue();
-
-	const updateRootFile = useUpdateRootFile();
-
-	useEffect(() => {
-		ctx.app.workspace.on("active-leaf-change", (leaf) => {
-			if (leaf) {
-				const viewState = leaf.getViewState();
-				if (viewState.type === "markdown" && ctx.isAutoRefresh.get()) {
-					updateRootFile();
-				}
-			}
-		});
-		if (rootFile) updateRootFile();
-	}, [updateRootFile]);
+	const rootFile = useAtom(ctx.rootFile);
 
 	if (!rootFile) return null;
 

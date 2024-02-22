@@ -1,10 +1,11 @@
 import { App, TFile } from "obsidian";
 import { PluginSettings } from "src/types";
-import { CurrentChecker, Value, ValueCollection } from "./helpers";
+import { CurrentChecker } from "./helpers";
 import { FilesHistory } from "./history";
 import { Hierarchy } from "src/models/hierarchy";
 import { createFileHierarchyImpl } from "src/utils/hierarchy";
 import { getFileByPath } from "src/utils/obsidian";
+import { Atom, AtomCollection } from "src/models/atom";
 
 export class PluginContext {
 	app: App;
@@ -13,11 +14,11 @@ export class PluginContext {
 	saveSettings: () => void;
 
 	currentFile: CurrentChecker;
-	rootFile: Value<null | TFile>;
-	isAutoRefresh: Value<boolean>;
+	rootFile: Atom<null | TFile>;
+	isAutoRefresh: Atom<boolean>;
 	highlighted: CurrentChecker;
 	history: FilesHistory;
-	expanded: ValueCollection<boolean>;
+	expanded: AtomCollection<boolean>;
 	hierarchy: Hierarchy<TFile>;
 
 	constructor(p: Pick<PluginContext, "app" | "settings" | "saveSettings">) {
@@ -29,7 +30,7 @@ export class PluginContext {
 
 		this.currentFile = new CurrentChecker(activeFile?.path);
 
-		this.rootFile = new Value<null | TFile>(
+		this.rootFile = new Atom<null | TFile>(
 			this.settings.rootFilePath
 				? getFileByPath(p.app, this.settings.rootFilePath) ?? null
 				: activeFile
@@ -37,13 +38,13 @@ export class PluginContext {
 					: null,
 		);
 
-		this.isAutoRefresh = new Value<boolean>(this.rootFile ? false : true);
+		this.isAutoRefresh = new Atom<boolean>(this.rootFile ? false : true);
 
 		this.highlighted = new CurrentChecker(null);
 
 		this.history = new FilesHistory();
 
-		this.expanded = new ValueCollection(false);
+		this.expanded = new AtomCollection(false);
 
 		this.hierarchy = Hierarchy.create({
 			impl: createFileHierarchyImpl(this),

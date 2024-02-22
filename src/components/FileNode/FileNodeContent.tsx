@@ -4,9 +4,9 @@ import React, {
 	useEffect,
 	useState,
 } from "react";
-import { usePluginContext } from "../../hooks/appContext";
+import { usePluginContext } from "../../hooks/context";
 import { TFile } from "obsidian";
-import { ObsIcon } from "../../baseComponents/ObsIcon";
+import { ObsIcon } from "../../base-components/ObsIcon";
 import { NodeKind } from "./types";
 
 import { PluginContext } from "src/context";

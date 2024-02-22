@@ -1,31 +1,31 @@
 import React, { useCallback } from "react";
-import { ObsIcon } from "../baseComponents/ObsIcon";
-import { useUpdateRootFile } from "../hooks/useUpdateRootFile";
-import { usePluginContext } from "src/hooks/appContext";
+import { ObsIcon } from "../base-components/ObsIcon";
+import { usePluginContext } from "src/hooks/context";
 import { getFileByPath } from "src/utils/obsidian";
+import { useAtom } from "src/hooks/atom";
+import { updateRootFile } from "src/utils/hierarchy";
 
 const useProps = () => {
 	const ctx = usePluginContext();
-	const updateCurrentFile = useUpdateRootFile();
 
 	const toggleAutoRefresh = useCallback(() => {
 		ctx.isAutoRefresh.setFn((x) => !x);
-		updateCurrentFile();
+		updateRootFile(ctx);
 	}, []);
 
 	const onUndo = useCallback(() => {
 		const previousFile = ctx.history.undo();
 
-		updateCurrentFile(previousFile, false);
+		updateRootFile(ctx, previousFile, false);
 	}, []);
 
 	const onRedo = useCallback(() => {
 		const previousFile = ctx.history.redo();
 
-		updateCurrentFile(previousFile, false);
+		updateRootFile(ctx, previousFile, false);
 	}, []);
 
-	const isAutoRefresh = ctx.isAutoRefresh.useValue();
+	const isAutoRefresh = useAtom(ctx.isAutoRefresh);
 
 	return {
 		...ctx.history.useValue(),
@@ -39,7 +39,6 @@ const useProps = () => {
 export const TopBar = () => {
 	const p = useProps();
 	const ctx = usePluginContext();
-	const updateRootFile = useUpdateRootFile();
 	const homeFile = ctx.settings.homeFilePath
 		? getFileByPath(ctx.app, ctx.settings.homeFilePath)
 		: null;
@@ -51,7 +50,7 @@ export const TopBar = () => {
 					kind="home"
 					size="s"
 					onClick={() => {
-						updateRootFile(homeFile);
+						updateRootFile(ctx, homeFile);
 					}}
 					tooltip={`Go to "${ctx.settings.homeFilePath}"`}
 				/>

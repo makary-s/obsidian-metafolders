@@ -4,13 +4,14 @@ import React, {
 	useEffect,
 	useRef,
 } from "react";
-import { usePluginContext } from "../../hooks/appContext";
-import { useUpdateRootFile } from "../../hooks/useUpdateRootFile";
+import { usePluginContext } from "../../hooks/context";
 import { FileNodeProps } from "./types";
 import { FileNodeContent } from "./FileNodeContent";
 import { FileRelatives } from "./FileRelatives";
 import { useBreadCrumpChild } from "src/hooks/bread-crumbs";
 import { useHierarchyNodeRelatives } from "src/hooks/hierarchy";
+import { useAtomCollection } from "src/hooks/atom";
+import { updateRootFile } from "src/utils/hierarchy";
 
 export const FileNode = ({
 	node,
@@ -19,7 +20,6 @@ export const FileNode = ({
 	collapsedDepth,
 }: FileNodeProps) => {
 	const ctx = usePluginContext();
-	const updateRootFile = useUpdateRootFile();
 	const clickCount = useRef({ count: 0, timestamp: -1 });
 
 	const highlighted = ctx.highlighted.useIsCurrent(node.key);
@@ -40,7 +40,7 @@ export const FileNode = ({
 				if (now - clickCount.current.timestamp < 300) {
 					clickCount.current.count = 0;
 					clickCount.current.timestamp = 0;
-					updateRootFile(node.data);
+					updateRootFile(ctx, node.data);
 				} else {
 					clickCount.current.count = 1;
 					clickCount.current.timestamp = now;
@@ -58,7 +58,7 @@ export const FileNode = ({
 
 	const expandId = `${breadCrump.pathString}:${kind}`;
 
-	const expanded = ctx.expanded.useValue(expandId);
+	const expanded = useAtomCollection(ctx.expanded, expandId);
 
 	const toggleExpand: MouseEventHandler<HTMLElement> = useCallback(
 		(e) => {

@@ -1,15 +1,16 @@
 import { TFile } from "obsidian";
-import { Value } from "./helpers";
+import { useAtom } from "src/hooks/atom";
+import { Atom } from "src/models/atom";
 
 export type HistoryRenderProps = { hasUndo: boolean; hasRedo: boolean };
 
 export class FilesHistory {
 	private offset = 1;
 	private files: TFile[] = [];
-	private value: Value<HistoryRenderProps>;
+	private value: Atom<HistoryRenderProps>;
 
 	constructor() {
-		this.value = new Value(this.createNewValue());
+		this.value = new Atom(this.createNewValue());
 	}
 
 	private updateValue() {
@@ -24,7 +25,7 @@ export class FilesHistory {
 	}
 
 	useValue() {
-		return this.value.useValue();
+		return useAtom(this.value);
 	}
 
 	push(newFile: TFile) {

@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import { NodeKind } from "./types";
 import { FileNode } from "./FileNode";
-import { Collapsible } from "src/baseComponents/Collapsible";
+import { Collapsible } from "src/base-components/Collapsible";
 import { BreadCrumb } from "src/models/bread-crumbs";
 import { HierarchyNode } from "src/models/hierarchy/node";
 import { TFile } from "obsidian";

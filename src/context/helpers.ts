@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { getMapDefault } from "src/utils/basic";
-
-const createEmptySet = <T>() => new Set<T>();
+import { createEmptySet, getMapDefault } from "src/utils/basic";
 
 export class CurrentChecker {
 	private callbacks = new Map<string, Set<(value: boolean) => void>>();
@@ -41,92 +39,5 @@ export class CurrentChecker {
 		}, [setCurrent, id]);
 
 		return isCurrent;
-	}
-}
-
-export class Value<T> {
-	private current: T;
-	private callbacks = new Set<(value: T) => void>();
-
-	constructor(initialValue: T) {
-		this.current = initialValue;
-	}
-
-	private dispatchCallbacks() {
-		this.callbacks.forEach((fn) => fn(this.current));
-	}
-
-	set(value: T): void {
-		this.current = value;
-		this.dispatchCallbacks();
-	}
-
-	setFn(setter: (current: T) => T): void {
-		this.current = setter(this.current);
-		this.dispatchCallbacks();
-	}
-
-	get(): T {
-		return this.current;
-	}
-
-	useValue(): T {
-		const [value, setValue] = useState(this.current);
-
-		useEffect(() => {
-			this.callbacks.add(setValue);
-
-			return () => {
-				this.callbacks.delete(setValue);
-			};
-		}, []);
-
-		return value;
-	}
-}
-
-export class ValueCollection<T> {
-	private defaultValue: T;
-	private current: Map<string, T> = new Map();
-	private callbacks = new Map<string, Set<(value: T) => void>>();
-
-	constructor(defaultValue: T) {
-		this.defaultValue = defaultValue;
-	}
-
-	private dispatchCallbacks(id: string) {
-		const value = this.get(id);
-
-		this.callbacks.get(id)?.forEach((fn) => fn(value));
-	}
-
-	set(id: string, value: T): void {
-		this.current.set(id, value);
-
-		this.dispatchCallbacks(id);
-	}
-
-	setFn(id: string, setter: (current: T) => T): void {
-		this.current.set(id, setter(this.get(id)));
-
-		this.dispatchCallbacks(id);
-	}
-
-	get(id: string): T {
-		return this.current.has(id) ? this.current.get(id)! : this.defaultValue;
-	}
-
-	useValue(id: string): T {
-		const [value, setValue] = useState(this.get(id));
-
-		useEffect(() => {
-			getMapDefault(this.callbacks, id, createEmptySet).add(setValue);
-
-			return () => {
-				this.callbacks.get(id)?.delete(setValue);
-			};
-		}, []);
-
-		return value;
 	}
 }

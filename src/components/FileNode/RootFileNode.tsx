@@ -4,17 +4,16 @@ import React, {
 	useEffect,
 	useMemo,
 } from "react";
-import { usePluginContext } from "../../hooks/appContext";
+import { usePluginContext } from "../../hooks/context";
 import { TFile } from "obsidian";
-import { useUpdateRootFile } from "../../hooks/useUpdateRootFile";
 import { FileNodeContent } from "./FileNodeContent";
 import { FileRelatives } from "./FileRelatives";
 import { BreadCrumb } from "src/models/bread-crumbs";
 import { useHierarchyNodeRelatives } from "src/hooks/hierarchy";
+import { updateRootFile } from "src/utils/hierarchy";
 
 export const RootFileNode = ({ file }: { file: TFile }) => {
 	const ctx = usePluginContext();
-	const updateRootFile = useUpdateRootFile();
 
 	const highlighted = ctx.highlighted.useIsCurrent(file.path);
 
@@ -27,7 +26,7 @@ export const RootFileNode = ({ file }: { file: TFile }) => {
 			const isNewTab =
 				e.ctrlKey || e.metaKey ? (e.altKey ? "split" : "tab") : false;
 
-			updateRootFile(file);
+			updateRootFile(ctx, file);
 
 			ctx.app.workspace.openLinkText(file.path, "", isNewTab, {
 				active: true,
