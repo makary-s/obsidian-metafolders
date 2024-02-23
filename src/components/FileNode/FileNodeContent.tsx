@@ -126,12 +126,17 @@ export const FileNodeContent = ({
 					expanderIcon.className ?? "",
 				].join(" ")}
 			/>
-			<div
-				className="file-node__content"
-				ref={textElRef}
-				title={textElTooltip}
-			>
-				{file.basename}
+			<div className="file-node__content-wrapper">
+				<div
+					className="file-node__content"
+					ref={textElRef}
+					title={textElTooltip}
+				>
+					{file.basename}
+				</div>
+				{file.parent?.path && file.parent.path !== "/" ? (
+					<div className="file-node__path">{file.parent.path}</div>
+				) : null}
 			</div>
 			{isPrev ? <ObsIcon size="s" disabled kind="history" /> : null}
 			<div className="file-node__content-side">
