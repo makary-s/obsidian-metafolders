@@ -123,6 +123,10 @@
 .file-node__content {
 	line-height: var(--line-height-tight);
 	font-size: var(--nav-item-size);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow-wrap: anywhere;
+	overflow: hidden;
 }
 
 .file-node__content-side {

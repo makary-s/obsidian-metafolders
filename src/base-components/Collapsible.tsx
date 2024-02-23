@@ -1,4 +1,8 @@
 import React, { PropsWithChildren, useLayoutEffect, useRef } from "react";
+import { clampNumber } from "src/utils/basic";
+
+const MAX_MS_PER_PX = 500;
+const MIN_MS_PER_PX = 50;
 
 export const Collapsible = ({
 	expanded,
@@ -35,9 +39,10 @@ export const Collapsible = ({
 				totalHeight += child.scrollHeight;
 			}
 
-			const transitionDuration = Math.max(
-				50,
-				Math.min(1000, Math.floor(msPerPx * totalHeight)),
+			const transitionDuration = clampNumber(
+				msPerPx,
+				MIN_MS_PER_PX,
+				MAX_MS_PER_PX,
 			);
 
 			elRef.current.style.transition = `max-height ${transitionDuration}ms`;

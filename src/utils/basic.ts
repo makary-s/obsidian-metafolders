@@ -41,3 +41,7 @@ export const getSetDiff = <T>(oldSet: Set<T>, newSet: Set<T>): Set<T> => {
 export const keys = <T extends Record<any, any>>(obj: T) => {
 	return Object.keys(obj) as Array<keyof T>;
 };
+
+export const clampNumber = (value: number, min: number, max: number) => {
+	return Math.min(max, Math.max(min, value));
+};

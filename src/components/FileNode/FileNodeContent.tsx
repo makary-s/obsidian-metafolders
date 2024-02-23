@@ -95,6 +95,14 @@ export const FileNodeContent = ({
 
 	const isPrev = ctx.history.checkPreviousFile(file);
 
+	const textElRef = React.useRef<HTMLDivElement>(null);
+
+	const textElTooltip =
+		textElRef.current &&
+		textElRef.current.scrollWidth > textElRef.current.clientWidth
+			? file.basename
+			: undefined;
+
 	return (
 		<div
 			className={[
@@ -118,8 +126,13 @@ export const FileNodeContent = ({
 					expanderIcon.className ?? "",
 				].join(" ")}
 			/>
-
-			<div className="file-node__content">{file.basename}</div>
+			<div
+				className="file-node__content"
+				ref={textElRef}
+				title={textElTooltip}
+			>
+				{file.basename}
+			</div>
 			{isPrev ? <ObsIcon size="s" disabled kind="history" /> : null}
 			<div className="file-node__content-side">
 				{!isCurrent && (
