@@ -12,8 +12,8 @@ export default class HierarchyView extends ItemView {
 	root: Root | null = null;
 	headerRoot: Root | null = null;
 	ctx: PluginContext;
-	navigation = false;
-	icon = PLUGIN_ICON_NAME;
+	override navigation = false;
+	override icon = PLUGIN_ICON_NAME;
 
 	constructor(leaf: WorkspaceLeaf, ctx: PluginContext) {
 		super(leaf);
@@ -28,8 +28,8 @@ export default class HierarchyView extends ItemView {
 		return PLUGIN_TITLE;
 	}
 
-	async onOpen() {
-		this.root = createRoot(this.containerEl.children[1]);
+	override async onOpen() {
+		this.root = createRoot(this.containerEl.children[1]!);
 
 		const headerEl = document.createElement("div");
 		this.headerRoot = createRoot(headerEl);
@@ -81,7 +81,7 @@ export default class HierarchyView extends ItemView {
 		);
 	}
 
-	async onClose() {
+	override async onClose() {
 		this.root?.unmount();
 		this.headerRoot?.unmount();
 	}

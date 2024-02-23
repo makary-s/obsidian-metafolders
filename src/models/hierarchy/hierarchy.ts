@@ -1,7 +1,6 @@
-import { HierarchyNode } from "./node";
-import { HierarchyImpl } from "./impl";
-
-class HierarchyError extends Error {}
+import type { HierarchyImpl } from "./impl";
+import type { HierarchyNode } from "./node";
+import { HierarchyError } from "./constants";
 
 export type HierarchyProps<T> = {
 	registry: Map<string, HierarchyNode<T>>;
@@ -33,7 +32,7 @@ export class Hierarchy<T> {
 			throw new HierarchyError(`Data not found: ${key}`);
 		}
 
-		const newNode = HierarchyNode.create({
+		const newNode = this.p.impl.createNode({
 			data,
 			hierarchy: this,
 			impl: this.p.impl,

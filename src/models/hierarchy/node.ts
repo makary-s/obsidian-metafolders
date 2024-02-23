@@ -64,6 +64,10 @@ export class HierarchyNode<T> {
 		return result;
 	}
 
+	hasRelative(relation: Relation, key: string): boolean {
+		return this.p.relatives[relation].has(key);
+	}
+
 	subscribe(relation: Relation, cb: SubscribeFn<T>): () => void {
 		this.p.subscriptions[relation].add(cb);
 

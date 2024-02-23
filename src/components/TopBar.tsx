@@ -42,7 +42,9 @@ export const TopBar = () => {
 
 	const homeFilePath = useAtomObject(ctx.settings, "homeFilePath");
 
-	const homeFile = homeFilePath ? getFileByPath(ctx.app, homeFilePath) : null;
+	const homeFile = homeFilePath
+		? getFileByPath(ctx.app, homeFilePath, null)
+		: null;
 
 	return (
 		<div className="top-panel">

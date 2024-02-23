@@ -36,7 +36,9 @@ export const Collapsible = ({
 			let totalHeight = 0;
 			for (let i = 0; i < elRef.current.children.length; i++) {
 				const child = elRef.current.children[i];
-				totalHeight += child.scrollHeight;
+				if (child) {
+					totalHeight += child.scrollHeight;
+				}
 			}
 
 			const transitionDuration = clampNumber(

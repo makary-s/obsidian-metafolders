@@ -1,8 +1,9 @@
 import { App, TFile } from "obsidian";
-import { getFileBacklinks, getFileByPath } from "./obsidian";
+import { extractMdLinkPath, getFileBacklinks, getFileByPath } from "./obsidian";
 import { PluginContext } from "src/context";
 import { createPromise } from "./basic";
 import { HierarchyImpl } from "src/models/hierarchy/impl";
+import { HierarchyNode } from "src/models/hierarchy/node";
 
 const checkHasPropByPosition = async (p: {
 	app: App;
@@ -17,7 +18,7 @@ const checkHasPropByPosition = async (p: {
 
 	while (currentIndex >= 0) {
 		const char = content[currentIndex];
-		if (char === "\n") break;
+		if (char === undefined || char === "\n") break;
 		lineChars.push(char);
 		currentIndex -= 1;
 	}
@@ -45,7 +46,7 @@ export const getParentFiles = async (p: {
 	if (frontMatterLinks) {
 		for (const item of frontMatterLinks) {
 			if (item.key.split(".")[0] === p.parentPropName) {
-				const linkedFile = getFileByPath(p.app, item.link);
+				const linkedFile = getFileByPath(p.app, item.link, p.file.path);
 				if (linkedFile) {
 					result.push(linkedFile);
 				}
@@ -65,7 +66,7 @@ export const getParentFiles = async (p: {
 					startOffset: item.position.start.offset,
 				})
 			) {
-				const linkedFile = getFileByPath(p.app, item.link);
+				const linkedFile = getFileByPath(p.app, item.link, p.file.path);
 				if (linkedFile) {
 					result.push(linkedFile);
 				}
@@ -92,14 +93,18 @@ export const getChildFiles = async (p: {
 				const [childLinkKey] = childLink.key.split(".");
 
 				if (childLinkKey === p.parentPropName) {
-					const childFile = getFileByPath(p.app, childPath);
+					const childFile = getFileByPath(
+						p.app,
+						childPath,
+						p.file.path,
+					);
 					if (childFile) {
 						childFiles.push(childFile);
 					}
 				}
 				// if inline
 			} else if ("position" in childLink) {
-				const childFile = getFileByPath(p.app, childPath);
+				const childFile = getFileByPath(p.app, childPath, p.file.path);
 				if (
 					childFile &&
 					(await checkHasPropByPosition({
@@ -118,23 +123,15 @@ export const getChildFiles = async (p: {
 	return childFiles;
 };
 
-// TODO draft; does not include inline links
 export const checkHasParent = (
 	ctx: PluginContext,
 	file: TFile,
 	linkFile: TFile,
 ): boolean => {
-	const frontmatter = ctx.app.metadataCache.getFileCache(file)?.frontmatter;
+	const fullLinkFile = getFileByPath(ctx.app, linkFile.path, file.path)?.path;
+	if (!fullLinkFile) return false;
 
-	if (!frontmatter) return false;
-
-	const prop = frontmatter[ctx.settings.get("parentPropName")];
-
-	if (Array.isArray(prop)) {
-		return prop.includes(`[[${linkFile.basename}]]`);
-	} else {
-		return prop === `[[${linkFile.basename}]]`;
-	}
+	return ctx.hierarchy.getNode(file.path).hasRelative("parent", fullLinkFile);
 };
 
 export const checkActiveFileHasParent = (
@@ -147,7 +144,10 @@ export const checkActiveFileHasParent = (
 	return checkHasParent(ctx, currentFile, linkFile);
 };
 
-const getNormalizedFrontmatterArray = (frontmatter: any, propName: string) => {
+const getNormalizedFrontmatterArray = (
+	frontmatter: any,
+	propName: string,
+): unknown[] => {
 	const prop = frontmatter[propName];
 	if (prop === undefined || prop === null) {
 		frontmatter[propName] = [];
@@ -199,6 +199,40 @@ export const removeParentLink = async (
 		linkedFile: TFile;
 	},
 ): Promise<void> => {
+	const links = ctx.app.metadataCache.getFileCache(p.file)?.links ?? [];
+
+	// Deleting inline links
+	for (const item of links) {
+		if (
+			await checkHasPropByPosition({
+				app: ctx.app,
+				parentPropName: ctx.settings.get("parentPropName"),
+				file: p.file,
+				startOffset: item.position.start.offset,
+			})
+		) {
+			const content = await ctx.app.vault.read(p.file);
+			let endOffset = item.position.end.offset;
+			while (endOffset < content.length) {
+				endOffset += 1;
+				const char = content[endOffset];
+				if (
+					char === undefined ||
+					char === "\n" ||
+					!(char === " " || char === ",")
+				) {
+					break;
+				}
+			}
+
+			const newContent =
+				content.slice(0, item.position.start.offset) +
+				content.slice(endOffset);
+
+			ctx.app.vault.modify(p.file, newContent);
+		}
+	}
+
 	const finished = createPromise<void>();
 
 	const checkLinked = () => checkHasParent(ctx, p.file, p.linkedFile);
@@ -208,8 +242,6 @@ export const removeParentLink = async (
 	});
 
 	ctx.app.fileManager.processFrontMatter(p.file, (frontMatter) => {
-		const newValue = `[[${p.linkedFile.basename}]]`;
-
 		if (!checkLinked()) {
 			finished.resolve();
 			return;
@@ -220,7 +252,16 @@ export const removeParentLink = async (
 			ctx.settings.get("parentPropName"),
 		);
 
-		const index = prop.indexOf(newValue);
+		const index = prop.findIndex((item: string) => {
+			const path = extractMdLinkPath(item);
+			if (!path) return false;
+
+			const fullPath = getFileByPath(ctx.app, path, p.file.path)?.path;
+			if (!fullPath) return false;
+
+			return fullPath === p.linkedFile.path;
+		});
+
 		if (index !== -1) {
 			prop.splice(index, 1);
 		}
@@ -263,6 +304,9 @@ export const createFileHierarchyImpl = (
 			file,
 			parentPropName: ctx.settings.get("parentPropName"),
 		}),
-	getDataByKey: (key) => getFileByPath(ctx.app, key),
+	getDataByKey: (key) => getFileByPath(ctx.app, key, null),
 	getKey: (file) => file.path,
+	createNode: (props) => {
+		return HierarchyNode.create(props);
+	},
 });

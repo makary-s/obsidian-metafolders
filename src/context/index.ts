@@ -32,7 +32,7 @@ export class PluginContext {
 		setTimeout(() => {
 			const rootFilePath = this.settings.get("rootFilePath");
 			const rootFile = rootFilePath
-				? getFileByPath(this.app, rootFilePath)
+				? getFileByPath(this.app, rootFilePath, null)
 				: null;
 
 			const currentActiveFile = this.app.workspace.getActiveFile();

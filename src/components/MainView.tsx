@@ -7,7 +7,9 @@ import { getFileByPath } from "src/utils/obsidian";
 export const MainView = () => {
 	const ctx = usePluginContext();
 	const rootFilePath = useAtomObject(ctx.settings, "rootFilePath");
-	const rootFile = rootFilePath ? getFileByPath(ctx.app, rootFilePath) : null;
+	const rootFile = rootFilePath
+		? getFileByPath(ctx.app, rootFilePath, null)
+		: null;
 
 	if (!rootFile) return null;
 

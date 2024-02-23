@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS: PluginSettings = {
 export default class HierarchyViewPlugin extends Plugin {
 	ctx: PluginContext;
 
-	async onload() {
+	override async onload() {
 		const settings: PluginSettings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
@@ -48,7 +48,7 @@ export default class HierarchyViewPlugin extends Plugin {
 		const leaves = workspace.getLeavesOfType(PLUGIN_VIEW_ID);
 
 		if (leaves.length > 0) {
-			leaf = leaves[0];
+			leaf = leaves[0]!;
 		} else {
 			leaf = workspace.getLeftLeaf(false);
 			await leaf.setViewState({ type: PLUGIN_VIEW_ID, active: true });
