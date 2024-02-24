@@ -4,8 +4,7 @@
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Metafolders",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"author": "Makary Sharoyan <yasshig@gmail.com>",
+	"authorUrl": "https://github.com/makary-s",
 	"isDesktopOnly": false
 }

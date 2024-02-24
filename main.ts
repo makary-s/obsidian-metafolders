@@ -72,7 +72,7 @@ class SettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName("Parent Property Name")
+			.setName("Parent property name")
 			.setDesc(
 				"Required. A property indicating the parent of the note. This will be used to build a hierarchy. To apply the changes correctly, it requires restarting the plugin or app after the change.",
 			)
