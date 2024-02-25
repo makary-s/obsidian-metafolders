@@ -1,5 +1,10 @@
 import { App, TFile } from "obsidian";
-import { extractMdLinkPath, getFileBacklinks, getFileByPath } from "./obsidian";
+import {
+	extractMdLinkPath,
+	getFileBacklinks,
+	getFileByPath,
+	getRelativeFileByPath,
+} from "./obsidian";
 import { PluginContext } from "src/context";
 import { createPromise } from "./basic";
 import { HierarchyImpl } from "src/models/hierarchy/impl";
@@ -46,7 +51,11 @@ export const getParentFiles = async (p: {
 	if (frontMatterLinks) {
 		for (const item of frontMatterLinks) {
 			if (item.key.split(".")[0] === p.parentPropName) {
-				const linkedFile = getFileByPath(p.app, item.link, p.file.path);
+				const linkedFile = getRelativeFileByPath(
+					p.app,
+					item.link,
+					p.file.path,
+				);
 				if (linkedFile) {
 					result.push(linkedFile);
 				}
@@ -66,7 +75,11 @@ export const getParentFiles = async (p: {
 					startOffset: item.position.start.offset,
 				})
 			) {
-				const linkedFile = getFileByPath(p.app, item.link, p.file.path);
+				const linkedFile = getRelativeFileByPath(
+					p.app,
+					item.link,
+					p.file.path,
+				);
 				if (linkedFile) {
 					result.push(linkedFile);
 				}
@@ -93,7 +106,7 @@ export const getChildFiles = async (p: {
 				const [childLinkKey] = childLink.key.split(".");
 
 				if (childLinkKey === p.parentPropName) {
-					const childFile = getFileByPath(
+					const childFile = getRelativeFileByPath(
 						p.app,
 						childPath,
 						p.file.path,
@@ -104,7 +117,11 @@ export const getChildFiles = async (p: {
 				}
 				// if inline
 			} else if ("position" in childLink) {
-				const childFile = getFileByPath(p.app, childPath, p.file.path);
+				const childFile = getRelativeFileByPath(
+					p.app,
+					childPath,
+					p.file.path,
+				);
 				if (
 					childFile &&
 					(await checkHasPropByPosition({
@@ -128,7 +145,11 @@ export const checkHasParent = (
 	file: TFile,
 	linkFile: TFile,
 ): boolean => {
-	const fullLinkFile = getFileByPath(ctx.app, linkFile.path, file.path)?.path;
+	const fullLinkFile = getRelativeFileByPath(
+		ctx.app,
+		linkFile.path,
+		file.path,
+	)?.path;
 	if (!fullLinkFile) return false;
 
 	return ctx.hierarchy.getNode(file.path).hasRelative("parent", fullLinkFile);
@@ -256,7 +277,11 @@ export const removeParentLink = async (
 			const path = extractMdLinkPath(item);
 			if (!path) return false;
 
-			const fullPath = getFileByPath(ctx.app, path, p.file.path)?.path;
+			const fullPath = getRelativeFileByPath(
+				ctx.app,
+				path,
+				p.file.path,
+			)?.path;
 			if (!fullPath) return false;
 
 			return fullPath === p.linkedFile.path;
@@ -304,7 +329,7 @@ export const createFileHierarchyImpl = (
 			file,
 			parentPropName: ctx.settings.get("parentPropName"),
 		}),
-	getDataByKey: (key) => getFileByPath(ctx.app, key, null),
+	getDataByKey: (key) => getFileByPath(ctx.app, key),
 	getKey: (file) => file.path,
 	createNode: (props) => {
 		return HierarchyNode.create(props);

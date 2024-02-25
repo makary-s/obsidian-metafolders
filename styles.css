@@ -115,10 +115,6 @@
 }
 
 .file-node__content-wrapper {
-	display: flex;
-	flex-direction: column;
-	align-items: baseline;
-	justify-content: flex-start;
 	width: 100%;
 	overflow: hidden;
 }

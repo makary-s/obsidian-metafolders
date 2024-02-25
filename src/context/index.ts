@@ -4,7 +4,7 @@ import { CurrentChecker } from "./helpers";
 import { FilesHistory } from "./history";
 import { Hierarchy } from "src/models/hierarchy";
 import { createFileHierarchyImpl } from "src/utils/hierarchy";
-import { getFileByPath } from "src/utils/obsidian";
+import { getFileByPath, waitFilesLoaded } from "src/utils/obsidian";
 import { AtomCollection, AtomObject } from "src/models/atom";
 import HierarchyViewPlugin from "main";
 
@@ -24,31 +24,37 @@ export class PluginContext {
 		this.settings = new AtomObject(settings);
 		this.settings.subscribe(() => plugin.saveData(this.settings.current));
 
-		const activeFile = this.app.workspace.getActiveFile();
-
-		this.currentFile = new CurrentChecker(activeFile?.path);
-
-		// TODO: find a suitable event instead of a timeout
-		setTimeout(() => {
-			const rootFilePath = this.settings.get("rootFilePath");
-			const rootFile = rootFilePath
-				? getFileByPath(this.app, rootFilePath, null)
-				: null;
-
-			const currentActiveFile = this.app.workspace.getActiveFile();
-
-			if (!rootFile) {
-				if (currentActiveFile) {
-					this.settings.set("rootFilePath", currentActiveFile.path);
-				} else {
-					this.settings.set("isAutoRefresh", true);
-				}
-			}
-		}, 1000);
-
-		this.highlighted = new CurrentChecker(null);
+		this.currentFile = new CurrentChecker();
 
 		this.history = new FilesHistory();
+
+		waitFilesLoaded(this.app).then(() => {
+			const rootFilePath = this.settings.get("rootFilePath");
+
+			let rootFile = rootFilePath
+				? getFileByPath(this.app, rootFilePath)
+				: undefined;
+
+			if (!rootFile) {
+				// fallback: let's try to use the active file as root
+
+				const currentActiveFile = this.app.workspace.getActiveFile();
+				if (currentActiveFile) {
+					rootFile = currentActiveFile;
+					this.settings.set("rootFilePath", currentActiveFile.path);
+				}
+			}
+
+			if (rootFile) {
+				this.history.push(rootFile);
+			} else {
+				// fallback: enable auto-update so that the first open file becomes the root file
+
+				this.settings.set("isAutoRefresh", true);
+			}
+		});
+
+		this.highlighted = new CurrentChecker(null);
 
 		this.expanded = new AtomCollection(false);
 

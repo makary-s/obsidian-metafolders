@@ -18,10 +18,12 @@ export class FilesHistory {
 	}
 
 	private createNewValue(): HistoryRenderProps {
-		return {
+		const result = {
 			hasUndo: this.offset < this.files.length,
 			hasRedo: this.offset > 1,
 		};
+
+		return result;
 	}
 
 	useValue() {

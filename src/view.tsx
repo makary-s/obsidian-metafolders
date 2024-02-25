@@ -44,6 +44,10 @@ export default class HierarchyView extends ItemView {
 				if (viewState.type === "markdown") {
 					const newFile = this.ctx.app.workspace.getActiveFile();
 					this.ctx.currentFile.set(newFile?.path ?? null);
+
+					if (this.ctx.settings.get("isAutoRefresh")) {
+						updateRootFile(this.ctx);
+					}
 				}
 			}),
 		);
@@ -51,20 +55,6 @@ export default class HierarchyView extends ItemView {
 		this.registerEvent(
 			this.app.metadataCache.on("resolve", async (file) => {
 				this.ctx.hierarchy.getNode(file.path).updateRelatives();
-			}),
-		);
-
-		this.registerEvent(
-			this.app.workspace.on("active-leaf-change", (leaf) => {
-				if (leaf) {
-					const viewState = leaf.getViewState();
-					if (
-						viewState.type === "markdown" &&
-						this.ctx.settings.get("isAutoRefresh")
-					) {
-						updateRootFile(this.ctx);
-					}
-				}
 			}),
 		);
 

@@ -1,15 +1,22 @@
 import { App, LinkCache, TFile } from "obsidian";
 
-export const getFileByPath = (
+export const getRelativeFileByPath = (
 	app: App,
 	path: string,
-	sourcePath: string | null,
+	sourcePath: string,
 ): TFile | undefined => {
 	return (
-		// TODO: check app.vault.getAbstractFileByPath
 		app.metadataCache.getFirstLinkpathDest(path, sourcePath ?? "") ??
 		undefined
 	);
+};
+
+export const getFileByPath = (app: App, path: string): TFile | undefined => {
+	const file = app.vault.getAbstractFileByPath(path);
+
+	if (file instanceof TFile) {
+		return file;
+	}
 };
 
 export const getFileBacklinks = (
@@ -24,4 +31,16 @@ export const extractMdLinkPath = (link: string): string | undefined => {
 	if (!contents) return undefined;
 
 	return contents.split("|")[0];
+};
+
+export const waitFilesLoaded = (app: App): Promise<void> => {
+	return new Promise<void>((resolve) => {
+		const unsubscribeActiveLeafChange = app.workspace.on(
+			"active-leaf-change",
+			() => {
+				resolve();
+				app.workspace.offref(unsubscribeActiveLeafChange);
+			},
+		);
+	});
 };
