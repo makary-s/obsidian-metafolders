@@ -1,11 +1,14 @@
 # Metafolders Plugin for Obsidian
 
-Metafolders is a plugin for Obsidian that offers an alternative approach to viewing your notes hierarchy. Unlike a traditional file navigator, each hierarchy node in Metafolders is a note that can be nested within multiple other notes. This provides a more flexible and multi-dimensional organization for your notes.
+Metafolders is an Obsidian plugin which reimagines file management by overcoming typical limitations:
+
+-   It allows a single note to exist in multiple locations simultaneously.
+-   It abandons folders, utilizing notes themselves as both content and containers.
 
 ## Design Philosophy
 
 -   **Minimal Impact**: The goal is to minimally interfere with users' existing note-taking habits, enabling them to continue their workflow without reliance on the plugin, providing a natural extension to their note management system.
--   **Familiar Interface**: The goal is to provide a user interface that feels as natural and conventional as a standard file navigator while ensuring seamless integration with Obsidian's native design.
+-   **Familiar Interface**: The goal is to provide a user interface that feels as natural and conventional as a standard file navigator.
 
 ## How It Works
 
@@ -56,7 +59,7 @@ Metafolders builds a tree of notes based on a special (customizable) property th
     -   Add a panel to the bottom (or top) of the file view similar to backlinks.
     -   Display note tags in the tree. Should be disabled in settings.
     -   Support different types of note displays. The type can be determined through a tag or property.
-    -   Filter to search for notes in the current tree.
+    -   Filters.
 
 ## Support & Feedback
 
