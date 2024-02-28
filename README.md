@@ -42,24 +42,9 @@ Metafolders builds a tree of notes based on a special (customizable) property th
 -   **Parent property name** - You can specify any name for the property that indicates the parents. By default, it is "up".
 -   **Home file path** - In the settings, you can specify a home page, then a home button will appear on the toolbar, which will open it.
 
-## Plans
+## Future Plans
 
--   **First in line:**
-    -   Add title display strategies (file name, alias, title).
-    -   Add the ability to disable note path display in settings.
-    -   Add sorting strategies.
--   **Second in line:**
-    -   Context menu and more functions with the note node (e.g., "create here" option, "properties", possibly integration with the native menu).
-    -   Collapse control ("collapse/expand all", "collapse/expand children", "expand by n entries").
-    -   Folderization: the ability to make a note a folder note, the ability to nest the active record in a folder.
-    -   Highlight all notes for which the active note is a child (at any depth).
-    -   External API for other plugins.
--   **Might be done:**
-    -   The ability to create panels with different root files.
-    -   Add a panel to the bottom (or top) of the file view similar to backlinks.
-    -   Display note tags in the tree. Should be disabled in settings.
-    -   Support different types of note displays. The type can be determined through a tag or property.
-    -   Filters.
+You can view detailed information on the development roadmap and upcoming features [here](https://github.com/users/makary-s/projects/1/views/1).
 
 ## Support & Feedback
 
