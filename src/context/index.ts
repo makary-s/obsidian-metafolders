@@ -5,8 +5,21 @@ import { FilesHistory } from "./history";
 import { Hierarchy } from "src/models/hierarchy";
 import { createFileHierarchyImpl } from "src/utils/hierarchy";
 import { getFileByPath, waitFilesLoaded } from "src/utils/obsidian";
-import { AtomCollection, AtomObject } from "src/models/atom";
+import { Atom, AtomCollection, AtomObject } from "src/models/atom";
 import HierarchyViewPlugin from "main";
+import { useAtom } from "src/hooks/atom";
+
+class RootKey {
+	private value = new Atom<string>(String(Date.now()));
+
+	useValue = () => {
+		return useAtom(this.value);
+	};
+
+	update = () => {
+		this.value.set(String(Date.now()));
+	};
+}
 
 export class PluginContext {
 	app: App;
@@ -17,6 +30,8 @@ export class PluginContext {
 	history: FilesHistory;
 	expanded: AtomCollection<boolean>;
 	hierarchy: Hierarchy<TFile>;
+
+	rootKey = new RootKey();
 
 	constructor(plugin: HierarchyViewPlugin, settings: PluginSettings) {
 		this.app = plugin.app;

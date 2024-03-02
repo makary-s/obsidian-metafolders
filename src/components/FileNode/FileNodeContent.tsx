@@ -14,36 +14,8 @@ import {
 	checkActiveFileHasParent,
 	removeParentLink,
 } from "src/utils/hierarchy";
-import { getH1Text } from "src/utils/obsidian";
-import { HEADING_TITLE_PROP_NAME } from "src/constants";
-
-const getFileName = (ctx: PluginContext, file: TFile) => {
-	if (ctx.settings.get("titlePropNames").length === 0) {
-		return file.basename;
-	}
-
-	const metadata = ctx.app.metadataCache.getFileCache(file);
-
-	for (const titlePropName of ctx.settings.get("titlePropNames")) {
-		if (titlePropName === HEADING_TITLE_PROP_NAME) {
-			const headingText = getH1Text(ctx.app, file);
-
-			if (headingText) {
-				return headingText;
-			}
-		}
-
-		const title = metadata?.frontmatter?.[titlePropName];
-
-		if (Array.isArray(title)) {
-			return title[0];
-		} else if (title !== undefined && title !== "") {
-			return String(title);
-		}
-	}
-
-	return file.basename;
-};
+import { getFileName } from "src/utils/obsidian";
+import { Clickable } from "src/base-components/Clickable";
 
 const useIsLinked = (ctx: PluginContext, file: TFile) => {
 	const currentIsLinked = checkActiveFileHasParent(ctx, file);
@@ -146,38 +118,51 @@ export const FileNodeContent = ({
 			onMouseEnter={() => ctx.highlighted.set(file.path)}
 			onMouseLeave={() => ctx.highlighted.set(null)}
 		>
-			<ObsIcon
-				kind={expanderIcon.kind}
-				onClick={expanderIcon.onClick}
-				size="xs"
-				className={[
-					"file-node__expander",
-					expanderIcon.className ?? "",
-				].join(" ")}
-			/>
+			<Clickable onClick={expanderIcon.onClick}>
+				<ObsIcon
+					kind={expanderIcon.kind}
+					size="xs"
+					className={[
+						"file-node__expander",
+						expanderIcon.className ?? "",
+					].join(" ")}
+				/>
+			</Clickable>
 			<div className="file-node__content-wrapper">
 				<div
 					className="file-node__content"
 					ref={textElRef}
 					title={textElTooltip}
 				>
-					{getFileName(ctx, file)}
+					<span className="file-node__content-text">
+						{getFileName(ctx, file)}
+					</span>
+					{isPrev ? (
+						<ObsIcon
+							className="file-node__content-last-icon"
+							size="xs"
+							kind="history"
+						/>
+					) : null}
 				</div>
 				{file.parent?.path && file.parent.path !== "/" ? (
 					<div className="file-node__path">{file.parent.path}</div>
 				) : null}
 			</div>
-			{isPrev ? <ObsIcon size="s" disabled kind="history" /> : null}
+
 			<div className="file-node__content-side">
 				{!isCurrent && (
-					<ObsIcon
-						kind={isLinked ? "unlink" : "link"}
+					<Clickable
 						onClick={handleToggleLink}
-						size="xs"
 						tooltip={
 							isLinked ? "Unlink active file" : "Link active file"
 						}
-					/>
+					>
+						<ObsIcon
+							kind={isLinked ? "unlink" : "link"}
+							size="xs"
+						/>
+					</Clickable>
 				)}
 			</div>
 		</div>

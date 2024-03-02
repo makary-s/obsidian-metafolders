@@ -3,6 +3,7 @@ import {
 	extractMdLinkPath,
 	getFileBacklinks,
 	getFileByPath,
+	getFileName,
 	getRelativeFileByPath,
 } from "./obsidian";
 import { PluginContext } from "src/context";
@@ -335,3 +336,41 @@ export const createFileHierarchyImpl = (
 		return HierarchyNode.create(props);
 	},
 });
+
+const getSortItemsFn = (
+	ctx: PluginContext,
+): ((a: HierarchyNode<TFile>, b: HierarchyNode<TFile>) => number) => {
+	const { sortMode } = ctx.settings.current;
+
+	switch (sortMode.kind) {
+		case "title":
+			return (a: HierarchyNode<TFile>, b: HierarchyNode<TFile>) => {
+				const fileNameA = getFileName(ctx, a.data);
+				const fileNameB = getFileName(ctx, b.data);
+				return sortMode.direction === "asc"
+					? fileNameA.localeCompare(fileNameB)
+					: fileNameB.localeCompare(fileNameA);
+			};
+		case "modifiedTime":
+			return (a: HierarchyNode<TFile>, b: HierarchyNode<TFile>) => {
+				return sortMode.direction === "asc"
+					? a.data.stat.mtime - b.data.stat.mtime
+					: b.data.stat.mtime - a.data.stat.mtime;
+			};
+		case "createdTime":
+			return (a: HierarchyNode<TFile>, b: HierarchyNode<TFile>) => {
+				return sortMode.direction === "asc"
+					? a.data.stat.ctime - b.data.stat.ctime
+					: b.data.stat.ctime - a.data.stat.ctime;
+			};
+		default:
+			throw new Error(`Unsupported sort mode: ${sortMode.kind}`);
+	}
+};
+
+export const sortFiles = (
+	ctx: PluginContext,
+	files: HierarchyNode<TFile>[],
+): HierarchyNode<TFile>[] => {
+	return files.sort(getSortItemsFn(ctx));
+};
