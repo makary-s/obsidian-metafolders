@@ -8,13 +8,42 @@ import { usePluginContext } from "../../hooks/context";
 import { TFile } from "obsidian";
 import { ObsIcon } from "../../base-components/ObsIcon";
 import { NodeKind } from "./types";
-
 import { PluginContext } from "src/context";
 import {
 	addParentLink,
 	checkActiveFileHasParent,
 	removeParentLink,
 } from "src/utils/hierarchy";
+import { getH1Text } from "src/utils/obsidian";
+import { HEADING_TITLE_PROP_NAME } from "src/constants";
+
+const getFileName = (ctx: PluginContext, file: TFile) => {
+	if (ctx.settings.get("titlePropNames").length === 0) {
+		return file.basename;
+	}
+
+	const metadata = ctx.app.metadataCache.getFileCache(file);
+
+	for (const titlePropName of ctx.settings.get("titlePropNames")) {
+		if (titlePropName === HEADING_TITLE_PROP_NAME) {
+			const headingText = getH1Text(ctx.app, file);
+
+			if (headingText) {
+				return headingText;
+			}
+		}
+
+		const title = metadata?.frontmatter?.[titlePropName];
+
+		if (Array.isArray(title)) {
+			return title[0];
+		} else if (title !== undefined && title !== "") {
+			return String(title);
+		}
+	}
+
+	return file.basename;
+};
 
 const useIsLinked = (ctx: PluginContext, file: TFile) => {
 	const currentIsLinked = checkActiveFileHasParent(ctx, file);
@@ -132,7 +161,7 @@ export const FileNodeContent = ({
 					ref={textElRef}
 					title={textElTooltip}
 				>
-					{file.basename}
+					{getFileName(ctx, file)}
 				</div>
 				{file.parent?.path && file.parent.path !== "/" ? (
 					<div className="file-node__path">{file.parent.path}</div>

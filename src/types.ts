@@ -3,4 +3,5 @@ export type PluginSettings = {
 	rootFilePath: string | null;
 	homeFilePath: string | null;
 	isAutoRefresh: boolean;
+	titlePropNames: string[];
 };

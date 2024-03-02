@@ -44,3 +44,13 @@ export const waitFilesLoaded = (app: App): Promise<void> => {
 		);
 	});
 };
+
+export const getH1Text = (app: App, file: TFile): undefined | string => {
+	const cache = app.metadataCache.getFileCache(file);
+
+	const firstHeading = cache?.headings?.[0];
+
+	if (firstHeading && firstHeading.level === 1) {
+		return firstHeading.heading;
+	}
+};

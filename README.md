@@ -16,7 +16,7 @@ Metafolders builds a tree of notes based on a special (customizable) property th
 
 ## Installation
 
--   Download the latest release.
+-   Download the latest [release](https://github.com/makary-s/obsidian-metafolders/releases).
 -   Unzip the files into your Obsidian vault's .obsidian/plugins directory.
 -   Enable the plugin in Obsidian's settings under "Community Plugins".
 
@@ -49,3 +49,7 @@ You can view detailed information on the development roadmap and upcoming featur
 ## Support & Feedback
 
 Your contributions and feedback are invaluable! If you have any suggestions, improvements, or questions, please don't hesitate to submit a pull request, open an issue, or reach out through any contact listed in my profile [here](https://github.com/makary-s).
+
+## Changelog
+
+-   [2024.03.02] Now you can specify properties or a heading from which the file title will be derived. This can be done in the settings under the "Title source" section.

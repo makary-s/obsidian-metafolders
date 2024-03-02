@@ -5,17 +5,16 @@ import {
 	Setting,
 	WorkspaceLeaf,
 } from "obsidian";
-import { PLUGIN_ICON_NAME, PLUGIN_TITLE, PLUGIN_VIEW_ID } from "src/constants";
+import {
+	DEFAULT_SETTINGS,
+	HEADING_TITLE_PROP_NAME,
+	PLUGIN_ICON_NAME,
+	PLUGIN_TITLE,
+	PLUGIN_VIEW_ID,
+} from "src/constants";
 import { PluginContext } from "src/context";
 import { PluginSettings } from "src/types";
 import HierarchyView from "src/view";
-
-const DEFAULT_SETTINGS: PluginSettings = {
-	parentPropName: "up",
-	rootFilePath: null,
-	homeFilePath: null,
-	isAutoRefresh: false,
-};
 
 export default class HierarchyViewPlugin extends Plugin {
 	ctx: PluginContext;
@@ -86,6 +85,22 @@ class SettingTab extends PluginSettingTab {
 						);
 					}),
 			);
+
+		new Setting(containerEl)
+			.setName("Title source")
+			.setDesc(
+				`Specify the properties whose first value will be used as the file title.You can specify "${HEADING_TITLE_PROP_NAME}" to use the first-level heading from the file. You can specify multiple values in order of priority by separating them with commas. If none are found or the field is empty, the file name will be used.`,
+			)
+			.addText((text) => {
+				text.setValue(
+					this.plugin.ctx.settings.get("titlePropNames")?.join(", "),
+				).onChange(async (value) => {
+					this.plugin.ctx.settings.set(
+						"titlePropNames",
+						value.split(",").map((v) => v.trim()),
+					);
+				});
+			});
 
 		new Setting(containerEl)
 			.setName("Home file path")
