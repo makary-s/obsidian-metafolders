@@ -2,7 +2,7 @@ import { App, LinkCache, TFile } from "obsidian";
 import { HEADING_TITLE_PROP_NAME } from "src/constants";
 import { PluginContext } from "src/context";
 
-export const getRelativeFileByPath = (
+export const getRelativeFileByName = (
 	app: App,
 	path: string,
 	sourcePath: string,
@@ -13,6 +13,9 @@ export const getRelativeFileByPath = (
 	);
 };
 
+/**
+ * @param path should contain file extension
+ */
 export const getFileByPath = (app: App, path: string): TFile | undefined => {
 	const file = app.vault.getAbstractFileByPath(path);
 

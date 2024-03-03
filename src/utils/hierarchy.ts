@@ -4,7 +4,7 @@ import {
 	getFileBacklinks,
 	getFileByPath,
 	getFileName,
-	getRelativeFileByPath,
+	getRelativeFileByName,
 } from "./obsidian";
 import { PluginContext } from "src/context";
 import { createPromise } from "./basic";
@@ -52,7 +52,7 @@ export const getParentFiles = async (p: {
 	if (frontMatterLinks) {
 		for (const item of frontMatterLinks) {
 			if (item.key.split(".")[0] === p.parentPropName) {
-				const linkedFile = getRelativeFileByPath(
+				const linkedFile = getRelativeFileByName(
 					p.app,
 					item.link,
 					p.file.path,
@@ -76,7 +76,7 @@ export const getParentFiles = async (p: {
 					startOffset: item.position.start.offset,
 				})
 			) {
-				const linkedFile = getRelativeFileByPath(
+				const linkedFile = getRelativeFileByName(
 					p.app,
 					item.link,
 					p.file.path,
@@ -107,7 +107,7 @@ export const getChildFiles = async (p: {
 				const [childLinkKey] = childLink.key.split(".");
 
 				if (childLinkKey === p.parentPropName) {
-					const childFile = getRelativeFileByPath(
+					const childFile = getRelativeFileByName(
 						p.app,
 						childPath,
 						p.file.path,
@@ -118,7 +118,7 @@ export const getChildFiles = async (p: {
 				}
 				// if inline
 			} else if ("position" in childLink) {
-				const childFile = getRelativeFileByPath(
+				const childFile = getRelativeFileByName(
 					p.app,
 					childPath,
 					p.file.path,
@@ -146,7 +146,7 @@ export const checkHasParent = (
 	file: TFile,
 	linkFile: TFile,
 ): boolean => {
-	const fullLinkFile = getRelativeFileByPath(
+	const fullLinkFile = getRelativeFileByName(
 		ctx.app,
 		linkFile.path,
 		file.path,
@@ -278,7 +278,7 @@ export const removeParentLink = async (
 			const path = extractMdLinkPath(item);
 			if (!path) return false;
 
-			const fullPath = getRelativeFileByPath(
+			const fullPath = getRelativeFileByName(
 				ctx.app,
 				path,
 				p.file.path,

@@ -209,10 +209,9 @@
 }
 
 .top-panel {
-	padding: var(--size-4-2);
+	padding: var(--size-4-2) var(--size-4-4);
 	display: flex;
 	flex-direction: row;
-	justify-content: flex-end;
 	align-items: center;
 	color: var(--text-muted);
 	gap: var(--size-4-3);
@@ -221,7 +220,17 @@
 .top-panel_history {
 	display: flex;
 	flex-direction: row;
+	align-items: center;
 	gap: var(--size-4-1);
+	align-self: self-end;
+}
+
+.top-panel_left {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: var(--size-4-1);
+	flex: 1;
 }
 
 [data-type="hierarchy-view"] .view-content {
