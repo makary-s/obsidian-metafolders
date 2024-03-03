@@ -17,7 +17,7 @@ Metafolders builds a tree of notes based on a special (customizable) property th
 ## Installation
 
 -   Download the latest [release](https://github.com/makary-s/obsidian-metafolders/releases).
--   Unzip the files into your Obsidian vault's .obsidian/plugins directory.
+-   Unzip the files into your Obsidian vault's `.obsidian/plugins` directory.
 -   Enable the plugin in Obsidian's settings under "Community Plugins".
 
 ## Features
@@ -25,9 +25,9 @@ Metafolders builds a tree of notes based on a special (customizable) property th
 -   **Linking:** Any note in the navigator can be made a parent or removed from the parents of the active note by pressing a link button.
 -   **Root note pinning:** The root note can be pinned or changed with the active file. This can be adjusted by pressing the "pin" button.
     -   Any child tab can be made the root by double-clicking on it (relevant in pinned mode).
--   **Root file history:** The plugin panel has its own history of root files, which can be navigated using the "undo" and "redo" buttons.
+-   **Root file history:** The plugin panel has its own history of root files, which can be navigated using the "back" and "forward" buttons.
     -   The previous root note is marked with a special clock icon to visually see where you came from.
-    -   The "home" button returns to the home page (see "Home file path" settings).
+    -   The "home" button returns to the home file (see settings).
 -   **Opening notes:** A note in the navigator can be opened differently:
     -   Click - opens in the active tab.
     -   Click + Ctrl - opens in a new tab.
@@ -39,7 +39,16 @@ Metafolders builds a tree of notes based on a special (customizable) property th
 
 ## Settings
 
--   **Parent property name** - You can specify any name for the property that indicates the parents. By default, it is "up".
+-   **Parent property name** - You can specify any name for the property that
+    indicates the parents. By default, it is "up".
+-   **Title source** - You can specify where the text for the file title will come from. Options include:
+
+    -   File name (default)
+    -   A property from the front-matter
+    -   The first h1 heading (enter `{{h1}}`)
+
+    You can specify multiple options separated by commas. If the title cannot be found using the first option, the algorithm will move to the next one. If none of the options are found or the field is empty, the file name will be used as the title.
+
 -   **Home file path** - In the settings, you can specify a home page, then a home button will appear on the toolbar, which will open it.
 
 ## Future Plans
