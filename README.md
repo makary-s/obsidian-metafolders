@@ -72,5 +72,7 @@ Your contributions and feedback are invaluable! If you have any suggestions, imp
 
 ## Changelog
 
+### 1.1.0
+
 -   [2024.03.02] Now you can specify properties or a heading from which the file title will be derived. This can be done in the settings under the "Title source" section.
 -   [2024.03.03] Added the ability to sort files.
