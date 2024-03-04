@@ -23,27 +23,38 @@ Metafolders builds a tree of notes based on a special (customizable) property th
 ## Features
 
 -   **Linking:** Any note in the navigator can be made a parent or removed from the parents of the active note by pressing a link button.
+
 -   **Root note pinning:** The root note can be pinned or changed with the active file. This can be adjusted by pressing the "pin" button.
+
     -   Any child tab can be made the root by double-clicking on it (relevant in pinned mode).
+
 -   **Root file history:** The plugin panel has its own history of root files, which can be navigated using the "back" and "forward" buttons.
+
     -   The previous root note is marked with a special clock icon to visually see where you came from.
     -   The "home" button returns to the home file (see settings).
+
 -   **Opening notes:** A note in the navigator can be opened differently:
+
     -   Click - opens in the active tab.
     -   Click + Ctrl - opens in a new tab.
     -   Click + Ctrl + Alt - opens in a new section.
+
+-   **Title source** - You can specify where the text for the note title will come from (filename, heading, special prop). See settings section.
+
 -   **Additional features:**
+
+    -   Sorting items in a tree by name or dates.
     -   The plugin state is saved between reloads.
     -   Tree expansion within the session is preserved even when changing the root file.
     -   When you hover over a note, it is highlighted throughout the tree, wherever it appears (as it could occur multiple times).
 
 ## Settings
 
--   **Parent property name** - You can specify any name for the property that
-    indicates the parents. By default, it is "up".
+-   **Parent property name** - You can specify any name for the property that indicates the parents. By default, it is "up".
+
 -   **Title source** - You can specify where the text for the file title will come from. Options include:
 
-    -   File name (default)
+    -   File name
     -   A property from the front-matter
     -   The first h1 heading (enter `{{h1}}`)
 

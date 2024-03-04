@@ -3,6 +3,7 @@ import {
 	Plugin,
 	PluginSettingTab,
 	Setting,
+	normalizePath,
 	WorkspaceLeaf,
 } from "obsidian";
 import {
@@ -115,7 +116,8 @@ class SettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.ctx.settings.set(
 							"homeFilePath",
-							value || DEFAULT_SETTINGS.homeFilePath,
+							normalizePath(value) ||
+								DEFAULT_SETTINGS.homeFilePath,
 						);
 					}),
 			);

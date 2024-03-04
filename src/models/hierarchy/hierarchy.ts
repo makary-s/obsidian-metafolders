@@ -11,7 +11,6 @@ export type HierarchyCreateProps<T> = {
 	impl: HierarchyImpl<T>;
 };
 
-// TODO: add registry garbage collection
 export class Hierarchy<T> {
 	protected constructor(protected p: HierarchyProps<T>) {}
 

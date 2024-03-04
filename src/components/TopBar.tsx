@@ -61,6 +61,7 @@ export const TopBar = () => {
 						<ObsIcon kind="home" size="s" />
 					</Clickable>
 				) : null}
+
 				<Clickable
 					onClick={p.toggleAutoRefresh}
 					tooltip={
@@ -72,7 +73,6 @@ export const TopBar = () => {
 						size="s"
 					/>{" "}
 				</Clickable>
-				<SortMenu />
 
 				<Clickable
 					onClick={ctx.rootKey.update}
@@ -80,6 +80,8 @@ export const TopBar = () => {
 				>
 					<ObsIcon kind={"refresh-cw"} size="s" />{" "}
 				</Clickable>
+
+				<SortMenu />
 			</div>
 			<div className="top-panel_history">
 				<Clickable

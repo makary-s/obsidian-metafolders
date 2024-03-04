@@ -40,6 +40,7 @@ export const extractMdLinkPath = (link: string): string | undefined => {
 
 export const waitFilesLoaded = (app: App): Promise<void> => {
 	return new Promise<void>((resolve) => {
+		// Do not use registerEvent because the subscription happens automatically.
 		const unsubscribeActiveLeafChange = app.workspace.on(
 			"active-leaf-change",
 			() => {

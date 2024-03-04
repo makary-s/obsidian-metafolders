@@ -23,6 +23,7 @@ class RootKey {
 
 export class PluginContext {
 	app: App;
+	plugin: HierarchyViewPlugin;
 	settings: AtomObject<PluginSettings>;
 
 	currentFile: CurrentChecker;
@@ -35,6 +36,7 @@ export class PluginContext {
 
 	constructor(plugin: HierarchyViewPlugin, settings: PluginSettings) {
 		this.app = plugin.app;
+		this.plugin = plugin;
 
 		this.settings = new AtomObject(settings);
 		this.settings.subscribe(() => plugin.saveData(this.settings.current));

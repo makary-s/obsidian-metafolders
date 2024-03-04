@@ -191,6 +191,7 @@ export const addParentLink = async (
 
 	const checkLinked = () => checkHasParent(ctx, p.file, p.linkedFile);
 
+	// Do not use registerEvent because the subscription happens automatically below.
 	const eventRef = ctx.app.metadataCache.on("resolved", () => {
 		if (checkLinked()) finished.resolve();
 	});
@@ -251,6 +252,7 @@ export const removeParentLink = async (
 				content.slice(0, item.position.start.offset) +
 				content.slice(endOffset);
 
+			// Editor API is not needed here.
 			ctx.app.vault.modify(p.file, newContent);
 		}
 	}
@@ -259,6 +261,7 @@ export const removeParentLink = async (
 
 	const checkLinked = () => checkHasParent(ctx, p.file, p.linkedFile);
 
+	// Do not use registerEvent because the subscription happens automatically below.
 	const eventRef = ctx.app.metadataCache.on("resolved", () => {
 		if (!checkLinked()) finished.resolve();
 	});
