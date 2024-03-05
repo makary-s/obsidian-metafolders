@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useRef } from "react";
 import { setIcon, type IconName } from "obsidian";
+import { join } from "src/utils/basic";
 
 export const ObsIcon = (props: {
 	kind: IconName;
@@ -18,11 +19,11 @@ export const ObsIcon = (props: {
 	return (
 		<span
 			ref={ref}
-			className={[
+			className={join([
 				"obs-icon",
-				size ? `obs-icon_size-${size}` : "",
+				size && `obs-icon_size-${size}`,
 				className,
-			].join(" ")}
+			])}
 		/>
 	);
 };

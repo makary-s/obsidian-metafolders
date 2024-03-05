@@ -1,4 +1,5 @@
 import React, { MouseEventHandler } from "react";
+import { join } from "src/utils/basic";
 
 export const Clickable = (props: {
 	as?: "span" | "div" | "button";
@@ -25,7 +26,7 @@ export const Clickable = (props: {
 		<Tag
 			role="button"
 			title={tooltip}
-			className={["clickable", className ?? ""].join(" ")}
+			className={join(["clickable", className])}
 			onClick={disabled ? undefined : onClick}
 			aria-disabled={disabled}
 		>

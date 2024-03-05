@@ -7,6 +7,7 @@ import { HierarchyNode } from "src/models/hierarchy/node";
 import { TFile } from "obsidian";
 import { usePluginContext } from "src/hooks/context";
 import { sortFiles } from "src/utils/hierarchy";
+import { join } from "src/utils/basic";
 
 export const FileRelatives = ({
 	nodes,
@@ -43,17 +44,17 @@ export const FileRelatives = ({
 
 	return (
 		<div
-			className={[
+			className={join([
 				"file-node__relatives",
-				expanded ? "" : "file-node__relatives_hidden",
-			].join(" ")}
+				expanded && "file-node__relatives_hidden",
+			])}
 		>
 			{hasIndent ? (
 				<div
-					className={
-						"file-node__indent " +
-						(highlight ? "file-node__indent_highlight" : "")
-					}
+					className={join([
+						"file-node__indent ",
+						highlight && "file-node__indent_highlight",
+					])}
 					onMouseEnter={onMouseEnter}
 					onMouseLeave={onMouseLeave}
 				/>

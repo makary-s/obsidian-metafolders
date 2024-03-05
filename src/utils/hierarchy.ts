@@ -43,7 +43,7 @@ export const getParentFiles = async (p: {
 	file: TFile;
 	parentPropName: string;
 }): Promise<TFile[]> => {
-	const result = [] as TFile[];
+	const result: TFile[] = [];
 
 	const metadata = p.app.metadataCache.getFileCache(p.file);
 

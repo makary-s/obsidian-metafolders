@@ -16,6 +16,7 @@ import {
 } from "src/utils/hierarchy";
 import { getFileName } from "src/utils/obsidian";
 import { Clickable } from "src/base-components/Clickable";
+import { join } from "src/utils/basic";
 
 const useIsLinked = (ctx: PluginContext, file: TFile) => {
 	const currentIsLinked = checkActiveFileHasParent(ctx, file);
@@ -106,14 +107,12 @@ export const FileNodeContent = ({
 
 	return (
 		<div
-			className={[
+			className={join([
 				"file-node__container",
-				highlighted ? "file-node__container_highlight" : "",
+				highlighted && "file-node__container_highlight",
 				`file-node__container_kind-${kind}`,
-				hasIndent ? "file-node__container_indented" : "",
-			]
-				.filter(Boolean)
-				.join(" ")}
+				hasIndent && "file-node__container_indented",
+			])}
 			onClick={onClick}
 			onMouseEnter={() => ctx.highlighted.set(file.path)}
 			onMouseLeave={() => ctx.highlighted.set(null)}
@@ -122,10 +121,10 @@ export const FileNodeContent = ({
 				<ObsIcon
 					kind={expanderIcon.kind}
 					size="xs"
-					className={[
+					className={join([
 						"file-node__expander",
-						expanderIcon.className ?? "",
-					].join(" ")}
+						expanderIcon.className,
+					])}
 				/>
 			</Clickable>
 			<div className="file-node__content-wrapper">

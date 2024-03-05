@@ -85,7 +85,7 @@ export const SortMenu = () => {
 
 	const onClick = useCallback(
 		(event: React.MouseEvent) => {
-			menu.showAtMouseEvent(event as any);
+			menu.showAtMouseEvent(event as unknown as MouseEvent);
 		},
 		[menu],
 	);

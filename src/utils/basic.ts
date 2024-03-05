@@ -45,3 +45,19 @@ export const keys = <T extends Record<any, any>>(obj: T) => {
 export const clampNumber = (value: number, min: number, max: number) => {
 	return Math.min(max, Math.max(min, value));
 };
+
+export const join = (
+	values: Array<string | boolean | null | undefined>,
+	separator = " ",
+): string => {
+	let result = "";
+
+	for (const value of values) {
+		if (value) {
+			if (result) result += separator;
+			result += value;
+		}
+	}
+
+	return result;
+};
