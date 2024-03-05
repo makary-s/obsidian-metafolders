@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-metafolders",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "An Obsidian plugin for multi-dimensional note navigation",
 	"main": "main.js",
 	"scripts": {
