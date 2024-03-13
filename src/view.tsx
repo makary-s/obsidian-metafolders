@@ -37,17 +37,22 @@ export default class HierarchyView extends ItemView {
 
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", (leaf) => {
-				if (leaf === null) return;
+				const oldPath = this.ctx.currentFile.get();
+				let newPath: string | null = null;
 
-				const viewState = leaf.getViewState();
-
-				if (viewState.type === "markdown") {
+				if (leaf) {
 					const newFile = this.ctx.app.workspace.getActiveFile();
-					this.ctx.currentFile.set(newFile?.path ?? null);
+					newPath = newFile?.path ?? null;
+				}
 
-					if (this.ctx.settings.get("isAutoRefresh")) {
-						updateRootFile(this.ctx);
-					}
+				if (oldPath === newPath) {
+					return;
+				}
+
+				this.ctx.currentFile.set(newPath);
+
+				if (this.ctx.settings.get("isAutoRefresh")) {
+					updateRootFile(this.ctx);
 				}
 			}),
 		);

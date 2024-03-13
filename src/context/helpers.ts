@@ -9,6 +9,10 @@ export class CurrentChecker {
 		this.currentId = currentId;
 	}
 
+	get(): string | null {
+		return this.currentId;
+	}
+
 	set(newId: string | null): void {
 		const oldCallbacks = this.currentId
 			? this.callbacks.get(this.currentId)
