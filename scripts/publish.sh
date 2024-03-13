@@ -6,6 +6,13 @@ else
     VERSION=$1
 fi
 
+npm run build
+
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to build"
+    exit 1
+fi
+
 node ./scripts/version-bump.mjs "$VERSION"
 
 if [ $? -ne 0 ]; then
