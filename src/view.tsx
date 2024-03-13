@@ -1,6 +1,6 @@
 import { Root, createRoot } from "react-dom/client";
 import React from "react";
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import { MainView } from "./components/MainView";
 import { TopBar } from "./components/TopBar";
 import { AppContext } from "./hooks/context";
@@ -60,6 +60,18 @@ export default class HierarchyView extends ItemView {
 		this.registerEvent(
 			this.app.metadataCache.on("resolve", async (file) => {
 				this.ctx.hierarchy.getNode(file.path).updateRelatives();
+			}),
+		);
+
+		this.registerEvent(
+			this.app.vault.on("rename", (newFile, oldPath) => {
+				this.ctx.hierarchy.deleteNode(oldPath);
+				if (
+					oldPath === this.ctx.settings.current.rootFilePath &&
+					newFile instanceof TFile
+				) {
+					updateRootFile(this.ctx, newFile, false);
+				}
 			}),
 		);
 

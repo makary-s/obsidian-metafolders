@@ -87,6 +87,11 @@ export class HierarchyNode<T> {
 		}
 	}
 
+	async forceUpdateSpecificRelatives(relation: Relation) {
+		const nodes = this.getRelatives(relation);
+		nodes.forEach((child) => child.dispatch(getOppositeRelation(relation)));
+	}
+
 	async updateSpecificRelatives(
 		relation: Relation,
 		updateInitialTime = Date.now(),
@@ -105,8 +110,8 @@ export class HierarchyNode<T> {
 
 		updatedItems.forEach((item) => {
 			this.p.hierarchy
-				.getNode(item)
-				.updateSpecificRelatives(
+				.getNodeSafe(item)
+				?.updateSpecificRelatives(
 					getOppositeRelation(relation),
 					updateInitialTime,
 				);

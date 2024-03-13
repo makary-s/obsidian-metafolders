@@ -15,6 +15,7 @@ import {
 } from "src/constants";
 import { PluginContext } from "src/context";
 import { PluginSettings } from "src/types";
+import { getRelativeFileByName } from "src/utils/obsidian";
 import HierarchyView from "src/view";
 
 export default class HierarchyViewPlugin extends Plugin {
@@ -114,10 +115,14 @@ class SettingTab extends PluginSettingTab {
 						this.plugin.ctx.settings.get("homeFilePath") ?? "",
 					)
 					.onChange(async (value) => {
+						const finalValue = getRelativeFileByName(
+							this.app,
+							normalizePath(value),
+							"",
+						);
 						this.plugin.ctx.settings.set(
 							"homeFilePath",
-							normalizePath(value) ||
-								DEFAULT_SETTINGS.homeFilePath,
+							finalValue?.path || DEFAULT_SETTINGS.homeFilePath,
 						);
 					}),
 			);

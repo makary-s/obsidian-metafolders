@@ -18,7 +18,7 @@ export class Hierarchy<T> {
 		return new Hierarchy({ impl: p.impl, registry: new Map() });
 	}
 
-	getNode(key: string) {
+	getNode(key: string): HierarchyNode<T> {
 		const node = this.p.registry.get(key);
 
 		if (node) {
@@ -40,5 +40,15 @@ export class Hierarchy<T> {
 		this.p.registry.set(key, newNode);
 
 		return newNode;
+	}
+
+	getNodeSafe(key: string): HierarchyNode<T> | undefined {
+		return this.p.registry.get(key);
+	}
+
+	deleteNode(key: string): void {
+		const node = this.p.registry.get(key);
+		this.p.registry.delete(key);
+		node?.forceUpdateSpecificRelatives("parent");
 	}
 }
