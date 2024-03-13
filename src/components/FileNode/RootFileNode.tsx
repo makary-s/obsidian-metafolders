@@ -15,7 +15,8 @@ import { updateRootFile } from "src/utils/hierarchy";
 export const RootFileNode = ({ file }: { file: TFile }) => {
 	const ctx = usePluginContext();
 
-	const highlighted = ctx.highlighted.useIsCurrent(file.path);
+	const highlightedId = ctx.highlighted.useCurrentFor(file.path);
+	const highlighted = file.path === highlightedId;
 
 	const onIndentHover = useCallback(() => {
 		ctx.highlighted.set(file.path);

@@ -57,7 +57,8 @@ export const FileNodeContent = ({
 }) => {
 	const ctx = usePluginContext();
 
-	const isCurrent = ctx.currentFile.useIsCurrent(file.path);
+	const currentId = ctx.currentFile.useCurrentFor(file.path);
+	const isCurrent = currentId === file.path;
 
 	const expanderIcon = hasChildren
 		? {
@@ -67,7 +68,8 @@ export const FileNodeContent = ({
 			}
 		: { kind: isCurrent ? "circle-dot" : "dot" };
 
-	const highlighted = ctx.highlighted.useIsCurrent(file.path);
+	const highlightedId = ctx.highlighted.useCurrentFor(file.path);
+	const highlighted = highlightedId === file.path;
 
 	const [isLinked, updateIsLinked] = useIsLinked(ctx, file);
 
@@ -150,7 +152,7 @@ export const FileNodeContent = ({
 			</div>
 
 			<div className="file-node__content-side">
-				{!isCurrent && (
+				{!isCurrent && currentId !== null && (
 					<Clickable
 						onClick={handleToggleLink}
 						tooltip={

@@ -22,7 +22,8 @@ export const FileNode = ({
 	const ctx = usePluginContext();
 	const clickCount = useRef({ count: 0, timestamp: -1 });
 
-	const highlighted = ctx.highlighted.useIsCurrent(node.key);
+	const highlightedId = ctx.highlighted.useCurrentFor(node.key);
+	const highlighted = highlightedId === node.key;
 
 	const breadCrump = useBreadCrumpChild(parentBreadCrumps, node.key);
 
