@@ -5,7 +5,7 @@ import { HierarchyNode } from "src/models/hierarchy/node";
 export type NodeKind = "child" | "parent";
 
 export type FileNodeProps = {
-	node: HierarchyNode<TFile>;
+	node: HierarchyNode;
 	kind: NodeKind;
 	parentBreadCrump: BreadCrumb;
 	collapsedDepth: number;

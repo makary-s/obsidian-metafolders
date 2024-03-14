@@ -3,9 +3,9 @@ import { BreadCrumb } from "src/models/bread-crumbs";
 
 export const useBreadCrumpChild = (
 	breadCrumb: BreadCrumb,
-	path: string,
+	key: string,
 ): BreadCrumb => {
-	const breadCrump = breadCrumb.detChild(path);
+	const breadCrump = breadCrumb.detChild(key);
 
 	useEffect(() => {
 		() => breadCrump.delete();

@@ -49,7 +49,9 @@ export default class HierarchyView extends ItemView {
 					return;
 				}
 
-				this.ctx.currentFile.set(newPath);
+				this.ctx.currentFile.set(
+					newPath ? this.ctx.hierarchy.getNode(newPath).id : newPath,
+				);
 
 				if (this.ctx.settings.get("isAutoRefresh")) {
 					updateRootFile(this.ctx);

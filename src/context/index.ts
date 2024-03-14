@@ -1,4 +1,4 @@
-import { App, TFile } from "obsidian";
+import { App } from "obsidian";
 import { PluginSettings } from "src/types";
 import { CurrentChecker } from "./helpers";
 import { FilesHistory } from "./history";
@@ -30,7 +30,7 @@ export class PluginContext {
 	highlighted: CurrentChecker;
 	history: FilesHistory;
 	expanded: AtomCollection<boolean>;
-	hierarchy: Hierarchy<TFile>;
+	hierarchy: Hierarchy;
 
 	rootKey = new RootKey();
 

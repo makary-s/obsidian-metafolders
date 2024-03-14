@@ -2,23 +2,23 @@ import type { HierarchyImpl } from "./impl";
 import type { HierarchyNode } from "./node";
 import { HierarchyError } from "./constants";
 
-export type HierarchyProps<T> = {
-	registry: Map<string, HierarchyNode<T>>;
-	impl: HierarchyImpl<T>;
+export type HierarchyProps = {
+	registry: Map<string, HierarchyNode>;
+	impl: HierarchyImpl;
 };
 
-export type HierarchyCreateProps<T> = {
-	impl: HierarchyImpl<T>;
+export type HierarchyCreateProps = {
+	impl: HierarchyImpl;
 };
 
-export class Hierarchy<T> {
-	protected constructor(protected p: HierarchyProps<T>) {}
+export class Hierarchy {
+	protected constructor(protected p: HierarchyProps) {}
 
-	static create<T>(p: HierarchyCreateProps<T>): Hierarchy<T> {
+	static create(p: HierarchyCreateProps): Hierarchy {
 		return new Hierarchy({ impl: p.impl, registry: new Map() });
 	}
 
-	getNode(key: string): HierarchyNode<T> {
+	getNode(key: string): HierarchyNode {
 		const node = this.p.registry.get(key);
 
 		if (node) {
@@ -42,13 +42,13 @@ export class Hierarchy<T> {
 		return newNode;
 	}
 
-	getNodeSafe(key: string): HierarchyNode<T> | undefined {
+	getNodeSafe(key: string): HierarchyNode | undefined {
 		return this.p.registry.get(key);
 	}
 
 	deleteNode(key: string): void {
 		const node = this.p.registry.get(key);
 		this.p.registry.delete(key);
-		node?.forceUpdateSpecificRelatives("parent");
+		node?.updateSpecificRelatives("parent");
 	}
 }

@@ -153,7 +153,9 @@ export const checkHasParent = (
 	)?.path;
 	if (!fullLinkFile) return false;
 
-	return ctx.hierarchy.getNode(file.path).hasRelative("parent", fullLinkFile);
+	return ctx.hierarchy
+		.getNode(file.path)
+		.hasRelativePath("parent", fullLinkFile);
 };
 
 export const checkActiveFileHasParent = (
@@ -318,9 +320,7 @@ export const updateRootFile = (
 	}
 };
 
-export const createFileHierarchyImpl = (
-	ctx: PluginContext,
-): HierarchyImpl<TFile> => ({
+export const createFileHierarchyImpl = (ctx: PluginContext): HierarchyImpl => ({
 	getChildren: async (file) =>
 		getChildFiles({
 			app: ctx.app,
@@ -336,18 +336,18 @@ export const createFileHierarchyImpl = (
 	getDataByKey: (key) => getFileByPath(ctx.app, key),
 	getKey: (file) => file.path,
 	createNode: (props) => {
-		return HierarchyNode.create(props);
+		return new HierarchyNode(props);
 	},
 });
 
 const getSortItemsFn = (
 	ctx: PluginContext,
-): ((a: HierarchyNode<TFile>, b: HierarchyNode<TFile>) => number) => {
+): ((a: HierarchyNode, b: HierarchyNode) => number) => {
 	const { sortMode } = ctx.settings.current;
 
 	switch (sortMode.kind) {
 		case "title":
-			return (a: HierarchyNode<TFile>, b: HierarchyNode<TFile>) => {
+			return (a: HierarchyNode, b: HierarchyNode) => {
 				const fileNameA = getFileName(ctx, a.data);
 				const fileNameB = getFileName(ctx, b.data);
 				return sortMode.direction === "asc"
@@ -355,13 +355,13 @@ const getSortItemsFn = (
 					: fileNameB.localeCompare(fileNameA);
 			};
 		case "modifiedTime":
-			return (a: HierarchyNode<TFile>, b: HierarchyNode<TFile>) => {
+			return (a: HierarchyNode, b: HierarchyNode) => {
 				return sortMode.direction === "asc"
 					? a.data.stat.mtime - b.data.stat.mtime
 					: b.data.stat.mtime - a.data.stat.mtime;
 			};
 		case "createdTime":
-			return (a: HierarchyNode<TFile>, b: HierarchyNode<TFile>) => {
+			return (a: HierarchyNode, b: HierarchyNode) => {
 				return sortMode.direction === "asc"
 					? a.data.stat.ctime - b.data.stat.ctime
 					: b.data.stat.ctime - a.data.stat.ctime;
@@ -373,7 +373,7 @@ const getSortItemsFn = (
 
 export const sortFiles = (
 	ctx: PluginContext,
-	files: HierarchyNode<TFile>[],
-): HierarchyNode<TFile>[] => {
+	files: HierarchyNode[],
+): HierarchyNode[] => {
 	return files.sort(getSortItemsFn(ctx));
 };

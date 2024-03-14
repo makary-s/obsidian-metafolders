@@ -10,6 +10,7 @@ export type MemoAsyncResult<T> =
 	| { status: "loading" }
 	| { status: "ready"; data: T };
 
+// TODO delete?
 export const useMemoAsync = <T>(fn: () => Promise<T>, deps: DependencyList) => {
 	const [data, setData] = useState<MemoAsyncResult<T>>({ status: "loading" });
 	const isMounted = useRef(true);
