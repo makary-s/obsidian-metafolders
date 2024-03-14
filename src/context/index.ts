@@ -1,6 +1,5 @@
 import { App } from "obsidian";
 import { PluginSettings } from "src/types";
-import { CurrentChecker } from "./helpers";
 import { FilesHistory } from "./history";
 import { Hierarchy } from "src/models/hierarchy";
 import { createFileHierarchyImpl } from "src/utils/hierarchy";
@@ -8,6 +7,8 @@ import { getFileByPath, waitFilesLoaded } from "src/utils/obsidian";
 import { Atom, AtomCollection, AtomObject } from "src/models/atom";
 import HierarchyViewPlugin from "main";
 import { useAtom } from "src/hooks/atom";
+import { Picker } from "src/models/Picker";
+import { HierarchyNode } from "src/models/hierarchy/node";
 
 class RootKey {
 	private value = new Atom<string>(String(Date.now()));
@@ -26,11 +27,11 @@ export class PluginContext {
 	plugin: HierarchyViewPlugin;
 	settings: AtomObject<PluginSettings>;
 
-	currentFile: CurrentChecker;
-	highlighted: CurrentChecker;
 	history: FilesHistory;
 	expanded: AtomCollection<boolean>;
 	hierarchy: Hierarchy;
+	highlightPicker: Picker<HierarchyNode>;
+	activePicker: Picker<HierarchyNode>;
 
 	rootKey = new RootKey();
 
@@ -40,8 +41,6 @@ export class PluginContext {
 
 		this.settings = new AtomObject(settings);
 		this.settings.subscribe(() => plugin.saveData(this.settings.current));
-
-		this.currentFile = new CurrentChecker();
 
 		this.history = new FilesHistory();
 
@@ -71,12 +70,13 @@ export class PluginContext {
 			}
 		});
 
-		this.highlighted = new CurrentChecker(null);
-
 		this.expanded = new AtomCollection(false);
 
 		this.hierarchy = Hierarchy.create({
 			impl: createFileHierarchyImpl(this),
 		});
+
+		this.highlightPicker = new Picker();
+		this.activePicker = new Picker();
 	}
 }

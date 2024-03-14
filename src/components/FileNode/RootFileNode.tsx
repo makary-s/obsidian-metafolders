@@ -9,13 +9,6 @@ import { HierarchyNode } from "src/models/hierarchy/node";
 export const RootFileNode = ({ node }: { node: HierarchyNode }) => {
 	const ctx = usePluginContext();
 
-	const highlightedId = ctx.highlighted.useCurrentFor(node.id);
-	const highlighted = node.id === highlightedId;
-
-	const onIndentHover = useCallback(() => {
-		ctx.highlighted.set(node.id);
-	}, [node]);
-
 	const onClick: MouseEventHandler<HTMLDivElement> = useCallback(
 		(e) => {
 			const isNewTab =
@@ -37,9 +30,7 @@ export const RootFileNode = ({ node }: { node: HierarchyNode }) => {
 			<FileRelatives
 				node={node}
 				hasIndent={false}
-				highlight={highlighted}
 				kind="parent"
-				onIndentHover={onIndentHover}
 				breadCrumps={breadCrumps}
 				expanded
 				collapsedDepth={0}
@@ -56,9 +47,7 @@ export const RootFileNode = ({ node }: { node: HierarchyNode }) => {
 			<FileRelatives
 				node={node}
 				hasIndent={false}
-				highlight={highlighted}
 				kind="child"
-				onIndentHover={onIndentHover}
 				breadCrumps={breadCrumps}
 				expanded
 				collapsedDepth={0}

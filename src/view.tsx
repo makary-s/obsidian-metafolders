@@ -37,7 +37,7 @@ export default class HierarchyView extends ItemView {
 
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", (leaf) => {
-				const oldPath = this.ctx.currentFile.get();
+				const oldPath = this.ctx.activePicker.currentTarget?.data.path;
 				let newPath: string | null = null;
 
 				if (leaf) {
@@ -49,9 +49,11 @@ export default class HierarchyView extends ItemView {
 					return;
 				}
 
-				this.ctx.currentFile.set(
-					newPath ? this.ctx.hierarchy.getNode(newPath).id : newPath,
-				);
+				const newNode = newPath
+					? this.ctx.hierarchy.getNode(newPath)
+					: null;
+
+				this.ctx.activePicker.pick(newNode);
 
 				if (this.ctx.settings.get("isAutoRefresh")) {
 					updateRootFile(this.ctx);

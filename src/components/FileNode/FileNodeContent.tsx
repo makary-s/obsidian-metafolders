@@ -60,13 +60,14 @@ export const FileNodeContent = observer(
 	}) => {
 		const ctx = usePluginContext();
 
-		const currentId = ctx.currentFile.useCurrentFor(node.id);
-		const isCurrent = currentId === node.id;
+		const isHighlighted = ctx.highlightPicker.getObservableValue(node);
+		const isActive = ctx.activePicker.getObservableValue(node);
+		const hasActive = ctx.activePicker.hasObservableValue();
 
 		const expanderIcon =
 			node.hasChildren && noArrow === false
 				? {
-						kind: isCurrent
+						kind: isActive
 							? "chevron-right-circle"
 							: "chevron-right",
 						className: expanded
@@ -74,10 +75,7 @@ export const FileNodeContent = observer(
 							: "",
 						onClick: toggleExpand,
 					}
-				: { kind: isCurrent ? "circle-dot" : "dot" };
-
-		const highlightedId = ctx.highlighted.useCurrentFor(node.id);
-		const highlighted = highlightedId === node.id;
+				: { kind: isActive ? "circle-dot" : "dot" };
 
 		const [isLinked, updateIsLinked] = useIsLinked(ctx, node.data);
 
@@ -121,15 +119,13 @@ export const FileNodeContent = observer(
 			<div
 				className={join([
 					"file-node__container",
-					highlighted && "file-node__container_highlight",
+					isHighlighted && "file-node__container_highlight",
 					`file-node__container_kind-${kind}`,
 					hasIndent && "file-node__container_indented",
 				])}
 				onClick={onClick}
-				onMouseEnter={() => {
-					ctx.highlighted.set(node.id);
-				}}
-				onMouseLeave={() => ctx.highlighted.set(null)}
+				onMouseEnter={() => ctx.highlightPicker.pick(node)}
+				onMouseLeave={() => ctx.highlightPicker.pick(null)}
 			>
 				<Clickable onClick={expanderIcon.onClick}>
 					<ObsIcon
@@ -166,7 +162,7 @@ export const FileNodeContent = observer(
 				</div>
 
 				<div className="file-node__content-side">
-					{!isCurrent && currentId !== null && (
+					{!isActive && hasActive && (
 						<Clickable
 							onClick={handleToggleLink}
 							tooltip={

@@ -80,7 +80,6 @@ export class HierarchyNode {
 	}
 
 	async updateSpecificRelatives(relation: Relation) {
-		console.log("updateSpecificRelatives", relation); // TODO remove
 		if (this.status[relation] === "loading") return;
 		this.status[relation] = "loading";
 

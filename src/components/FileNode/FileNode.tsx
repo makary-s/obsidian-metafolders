@@ -16,14 +16,7 @@ export const FileNode = ({
 	const ctx = usePluginContext();
 	const clickCount = useRef({ count: 0, timestamp: -1 });
 
-	const highlightedId = ctx.highlighted.useCurrentFor(node.id);
-	const highlighted = highlightedId === node.id;
-
 	const breadCrump = useBreadCrumpChild(parentBreadCrumps, node.id);
-
-	const setHighlighted = useCallback(() => {
-		ctx.highlighted.set(node.id);
-	}, [node.id]);
 
 	const onClick: MouseEventHandler<HTMLDivElement> = useCallback(
 		(e) => {
@@ -75,9 +68,7 @@ export const FileNode = ({
 			<FileRelatives
 				node={node}
 				hasIndent
-				highlight={highlighted}
 				kind={kind}
-				onIndentHover={setHighlighted}
 				breadCrumps={breadCrump}
 				expanded={expanded}
 				collapsedDepth={expanded ? collapsedDepth : collapsedDepth + 1}
