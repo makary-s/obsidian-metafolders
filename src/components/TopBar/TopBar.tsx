@@ -1,11 +1,11 @@
 import React, { useCallback } from "react";
-import { ObsIcon } from "../../components-base/ObsIcon/ObsIcon";
+import { ObsIcon } from "../../components-base/ObsIcon";
 import { usePluginContext } from "src/hooks/context";
 import { getRelativeFileByName } from "src/utils/obsidian";
 import { useAtomObject } from "src/hooks/atom";
 import { updateRootFile } from "src/utils/hierarchy";
-import { SortMenu } from "src/components/SortMenu/SortMenu";
-import { Clickable } from "src/components-base/Clickable/Clickable";
+import { SortMenu } from "src/components/SortMenu";
+import { Clickable } from "src/components-base/Clickable";
 
 import css from "./TopBar.scss";
 

@@ -5,7 +5,7 @@ import React, {
 	useState,
 } from "react";
 import { usePluginContext } from "../../../hooks/context";
-import { ObsIcon } from "../../../components-base/ObsIcon/ObsIcon";
+import { ObsIcon } from "../../../components-base/ObsIcon";
 import { NodeKind } from "../types";
 import { PluginContext } from "src/context";
 import {
@@ -15,7 +15,7 @@ import {
 	removeParentLink,
 } from "src/utils/hierarchy";
 import { getFileName } from "src/utils/obsidian";
-import { Clickable } from "src/components-base/Clickable/Clickable";
+import { Clickable } from "src/components-base/Clickable";
 import { join } from "src/utils/basic";
 import { HierarchyNode } from "src/models/hierarchy/node";
 import { observer } from "mobx-react-lite";

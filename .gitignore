@@ -2,8 +2,8 @@
 
 node_modules
 
-./main.js
-./styles.css
-./data.json
+/main.js
+/styles.css
+/data.json
 
 *.scss.d.ts
