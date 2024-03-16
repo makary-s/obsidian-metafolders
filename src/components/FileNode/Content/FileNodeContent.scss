@@ -14,32 +14,35 @@
 
 	border-radius: var(--radius-s);
 
-	&IsHighlighted {
+	&.highlighted {
 		background: var(--nav-item-background-active);
 	}
 
-	&Kindchild {
-		.expanderIdExpanded svg {
-			transform: rotate(90deg);
+	&.kind {
+		&_child {
+			.expanded svg {
+				transform: rotate(90deg);
+			}
+		}
+
+		&_parent {
+			.expanded svg {
+				transform: rotate(-90deg);
+			}
+		}
+
+		&_root {
+			font-weight: var(--font-semibold);
+			font-size: var(--font-ui-small);
+			border-radius: var(--radius-s);
+			padding-right: var(--size-4-1);
+			background-color: var(--background-primary);
+			box-shadow: 0 0 0 var(--border-width)
+				var(--background-modifier-border);
 		}
 	}
 
-	&Kindparent {
-		.expanderIdExpanded svg {
-			transform: rotate(-90deg);
-		}
-	}
-
-	&Kindroot {
-		font-weight: var(--font-semibold);
-		font-size: var(--font-ui-small);
-		border-radius: var(--radius-s);
-		padding-right: var(--size-4-1);
-		background-color: var(--background-primary);
-		box-shadow: 0 0 0 var(--border-width) var(--background-modifier-border);
-	}
-
-	&HasIndent {
+	&.hasIndent {
 		border-radius: 0 var(--radius-s) var(--radius-s) 0;
 	}
 }
@@ -93,6 +96,6 @@
 	transition: opacity 300ms;
 }
 
-.containerIsHighlighted .contentSide {
+.highlighted .contentSide {
 	opacity: 1;
 }

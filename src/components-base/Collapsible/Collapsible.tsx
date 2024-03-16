@@ -70,7 +70,7 @@ export const Collapsible = ({
 	}, [expanded, elRef, msPerPx]);
 
 	return (
-		<div ref={elRef} className={join([css.collapsibleDiv, className])}>
+		<div ref={elRef} className={join([css.root, className])}>
 			{children}
 		</div>
 	);

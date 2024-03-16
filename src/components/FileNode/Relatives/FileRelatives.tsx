@@ -42,17 +42,14 @@ export const FileRelatives = observer(
 					<div
 						className={join([
 							css.indent,
-							isHighlighted && css.indentIsHighlighted,
+							isHighlighted && css.highlighted,
 						])}
 						onMouseEnter={() => ctx.highlightPicker.pick(node)}
 						onMouseLeave={() => ctx.highlightPicker.pick(null)}
 					/>
 				) : null}
 
-				<Collapsible
-					expanded={expanded}
-					className={css.relativesContainer}
-				>
+				<Collapsible expanded={expanded} className={css.container}>
 					{sortedNodes.map((child) => (
 						<FileNode
 							node={child}

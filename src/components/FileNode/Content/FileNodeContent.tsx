@@ -67,12 +67,12 @@ export const FileNodeContent = observer(
 		const hasActive = ctx.activePicker.hasObservableValue();
 
 		const expanderIcon =
-			node.hasChildren && noArrow === false
+			kind !== "root" && node.hasRelative(kind) && noArrow === false
 				? {
 						kind: isActive
 							? "chevron-right-circle"
 							: "chevron-right",
-						className: expanded ? css.expanderIdExpanded : "",
+						className: expanded ? css.expanded : "",
 						onClick: toggleExpand,
 					}
 				: { kind: isActive ? "circle-dot" : "dot" };
@@ -119,9 +119,9 @@ export const FileNodeContent = observer(
 			<div
 				className={join([
 					css.container,
-					isHighlighted && css.containerIsHighlighted,
-					css[`containerKind${kind}`],
-					hasIndent && css.containerHasIndent,
+					isHighlighted && css.highlighted,
+					css[`kind_${kind}`],
+					hasIndent && css.hasIndent,
 				])}
 				onClick={onClick}
 				onMouseEnter={() => ctx.highlightPicker.pick(node)}

@@ -2,11 +2,13 @@
 	display: flex;
 	flex-direction: column;
 
-	&.kindchild {
-		flex-direction: column;
-	}
+	&.kind {
+		&_child {
+			flex-direction: column;
+		}
 
-	&.kindparent {
-		flex-direction: column-reverse;
+		&_parent {
+			flex-direction: column-reverse;
+		}
 	}
 }

@@ -3,7 +3,7 @@
 	flex-direction: row;
 }
 
-.relativesContainer {
+.container {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
@@ -15,7 +15,7 @@
 	border-right: var(--border-width) solid var(--background-modifier-border);
 	transition: border-color 300ms;
 
-	&IsHighlighted {
+	&.highlighted {
 		border-color: var(--background-modifier-border-hover);
 	}
 

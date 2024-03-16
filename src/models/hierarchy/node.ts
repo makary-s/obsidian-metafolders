@@ -3,7 +3,7 @@ import { Relation } from "./types";
 import { Hierarchy } from "./hierarchy";
 import { HierarchyImpl } from "./impl";
 import { getOppositeRelation } from "./helpers";
-import { action, computed, makeObservable, observable } from "mobx";
+import { action, makeObservable, observable } from "mobx";
 import { TFile } from "obsidian";
 import { randomUUID } from "crypto";
 
@@ -42,7 +42,6 @@ export class HierarchyNode {
 		makeObservable(this, {
 			data: observable,
 			relatives: observable,
-			hasChildren: computed,
 			updateSpecificRelatives: action,
 		});
 
@@ -53,8 +52,8 @@ export class HierarchyNode {
 		return this.impl.getKey(this.data);
 	}
 
-	get hasChildren(): boolean {
-		return this.relatives["child"].size > 0;
+	hasRelative(relation: Relation): boolean {
+		return this.relatives[relation].size > 0;
 	}
 
 	hasRelativePath(relation: Relation, path: string): boolean {

@@ -60,7 +60,7 @@ export const FileNode = ({
 	);
 
 	return (
-		<div className={join([css.root, css[`kind${kind}`]])}>
+		<div className={join([css.root, css[`kind_${kind}`]])}>
 			<FileNodeContent
 				node={node}
 				kind={kind}

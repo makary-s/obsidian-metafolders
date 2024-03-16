@@ -169,6 +169,7 @@ export const checkActiveFileHasParent = (
 };
 
 const getNormalizedFrontmatterArray = (
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	frontmatter: any,
 	propName: string,
 ): unknown[] => {
