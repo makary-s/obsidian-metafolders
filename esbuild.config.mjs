@@ -2,7 +2,8 @@ import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
 import { sassPlugin, postcssModules } from "esbuild-sass-plugin";
-import fs from "fs";
+import fs, { copyFileSync, existsSync, mkdirSync } from "fs";
+import "dotenv/config";
 
 const renamePlugin = (oldName, newName) => ({
 	name: "rename-plugin",
@@ -27,6 +28,20 @@ if you want to view the source, please visit the github repository of this plugi
 `;
 
 const prod = process.argv[2] === "production";
+
+let outputDir = ".";
+
+if (!prod) {
+	const outputDirBase = process.env["OUTPUT"];
+	if (!existsSync(outputDirBase)) {
+		throw new Error(`output directory ${outputDirBase} does not exist`);
+	}
+
+	outputDir = `${outputDirBase}/metafolders`;
+	mkdirSync(outputDir, { recursive: true });
+
+	copyFileSync("./manifest.json", `${outputDir}/manifest.json`);
+}
 
 const context = await esbuild.context({
 	banner: {
@@ -56,7 +71,7 @@ const context = await esbuild.context({
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
 	minify: prod,
-	outfile: "main.js",
+	outfile: `${outputDir}/main.js`,
 	plugins: [
 		sassPlugin({
 			filter: /\.scss$/,
@@ -66,7 +81,7 @@ const context = await esbuild.context({
 				globalModulePaths: ["src/styles/*.scss"],
 			}),
 		}),
-		renamePlugin("main.css", "styles.css"),
+		renamePlugin(`${outputDir}/main.css`, `${outputDir}/styles.css`),
 	],
 });
 
