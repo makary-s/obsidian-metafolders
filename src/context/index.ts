@@ -2,13 +2,13 @@ import { App } from "obsidian";
 import { PluginSettings } from "src/types";
 import { FilesHistory } from "./history";
 import { Hierarchy } from "src/models/hierarchy";
-import { createFileHierarchyImpl } from "src/utils/hierarchy";
 import { getFileByPath, waitFilesLoaded } from "src/utils/obsidian";
 import { Atom, AtomCollection, AtomObject } from "src/models/atom";
 import HierarchyViewPlugin from "main";
 import { useAtom } from "src/hooks/atom";
 import { Picker } from "src/models/Picker";
 import { HierarchyNode } from "src/models/hierarchy/node";
+import { createFileHierarchyImpl } from "src/utils/hierarchy-impl";
 
 class RootKey {
 	private value = new Atom<string>(String(Date.now()));

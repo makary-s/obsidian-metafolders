@@ -5,13 +5,13 @@ import React, {
 	useState,
 } from "react";
 import { usePluginContext } from "../../../hooks/context";
-import { TFile } from "obsidian";
 import { ObsIcon } from "../../../components-base/ObsIcon/ObsIcon";
 import { NodeKind } from "../types";
 import { PluginContext } from "src/context";
 import {
 	addParentLink,
 	checkActiveFileHasParent,
+	getActiveFileNode,
 	removeParentLink,
 } from "src/utils/hierarchy";
 import { getFileName } from "src/utils/obsidian";
@@ -22,8 +22,8 @@ import { observer } from "mobx-react-lite";
 
 import css from "./FileNodeContent.scss";
 
-const useIsLinked = (ctx: PluginContext, file: TFile) => {
-	const currentIsLinked = checkActiveFileHasParent(ctx, file);
+const useIsLinked = (ctx: PluginContext, node: HierarchyNode) => {
+	const currentIsLinked = checkActiveFileHasParent(ctx, node);
 
 	const [oldIsLinked, setIsLinked] = useState(currentIsLinked);
 
@@ -32,7 +32,7 @@ const useIsLinked = (ctx: PluginContext, file: TFile) => {
 	}, [currentIsLinked]);
 
 	const updateIsLinked = useCallback(() => {
-		const newIsLinked = checkActiveFileHasParent(ctx, file);
+		const newIsLinked = checkActiveFileHasParent(ctx, node);
 
 		if (oldIsLinked !== newIsLinked) {
 			setIsLinked(newIsLinked);
@@ -67,7 +67,7 @@ export const FileNodeContent = observer(
 		const hasActive = ctx.activePicker.hasObservableValue();
 
 		const expanderIcon =
-			kind !== "root" && node.hasRelative(kind) && noArrow === false
+			kind !== "root" && node.hasRelatives[kind] && noArrow === false
 				? {
 						kind: isActive
 							? "chevron-right-circle"
@@ -77,7 +77,7 @@ export const FileNodeContent = observer(
 					}
 				: { kind: isActive ? "circle-dot" : "dot" };
 
-		const [isLinked, updateIsLinked] = useIsLinked(ctx, node.data);
+		const [isLinked, updateIsLinked] = useIsLinked(ctx, node);
 
 		const file = node.data;
 
@@ -85,18 +85,18 @@ export const FileNodeContent = observer(
 			async (e) => {
 				e.stopPropagation();
 
-				const activeFile = ctx.app.workspace.getActiveFile();
-				if (!activeFile) return;
+				const activeNode = getActiveFileNode(ctx);
+				if (!activeNode) return;
 
-				if (checkActiveFileHasParent(ctx, file)) {
+				if (checkActiveFileHasParent(ctx, node)) {
 					await removeParentLink(ctx, {
-						file: activeFile,
-						linkedFile: file,
+						node: activeNode,
+						linkedNode: node,
 					});
 				} else {
 					await addParentLink(ctx, {
-						file: activeFile,
-						linkedFile: file,
+						node: activeNode,
+						linkedNode: node,
 					});
 				}
 

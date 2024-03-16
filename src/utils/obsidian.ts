@@ -92,3 +92,30 @@ export const getFileName = (ctx: PluginContext, file: TFile): string => {
 
 	return file.basename;
 };
+
+export const checkHasPropByPosition = async (p: {
+	app: App;
+	file: TFile;
+	startOffset: number;
+	parentPropName: string;
+}): Promise<boolean> => {
+	const content = await p.app.vault.read(p.file);
+
+	let currentIndex = p.startOffset - 1;
+	const lineChars = [] as string[];
+
+	while (currentIndex >= 0) {
+		const char = content[currentIndex];
+		if (char === undefined || char === "\n") break;
+		lineChars.push(char);
+		currentIndex -= 1;
+	}
+
+	lineChars.reverse();
+	const line = lineChars.join("");
+
+	// FIXME false positive matches are possible
+	return Boolean(
+		line.match(RegExp(`(^\\s*-?\\s*|\\[)${p.parentPropName}::\\s*`)),
+	);
+};

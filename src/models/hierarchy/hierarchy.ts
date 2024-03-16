@@ -25,7 +25,7 @@ export class Hierarchy {
 			return node;
 		}
 
-		const data = this.p.impl.getDataByKey(key);
+		const data = this.p.impl.getFileByPath(key);
 
 		if (!data) {
 			throw new HierarchyError(`Data not found: ${key}`);
