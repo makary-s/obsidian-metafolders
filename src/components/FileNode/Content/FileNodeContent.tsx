@@ -4,10 +4,10 @@ import React, {
 	useEffect,
 	useState,
 } from "react";
-import { usePluginContext } from "../../hooks/context";
+import { usePluginContext } from "../../../hooks/context";
 import { TFile } from "obsidian";
-import { ObsIcon } from "../../base-components/ObsIcon";
-import { NodeKind } from "./types";
+import { ObsIcon } from "../../../components-base/ObsIcon/ObsIcon";
+import { NodeKind } from "../types";
 import { PluginContext } from "src/context";
 import {
 	addParentLink,
@@ -15,10 +15,12 @@ import {
 	removeParentLink,
 } from "src/utils/hierarchy";
 import { getFileName } from "src/utils/obsidian";
-import { Clickable } from "src/base-components/Clickable";
+import { Clickable } from "src/components-base/Clickable/Clickable";
 import { join } from "src/utils/basic";
 import { HierarchyNode } from "src/models/hierarchy/node";
 import { observer } from "mobx-react-lite";
+
+import css from "./FileNodeContent.scss";
 
 const useIsLinked = (ctx: PluginContext, file: TFile) => {
 	const currentIsLinked = checkActiveFileHasParent(ctx, file);
@@ -70,9 +72,7 @@ export const FileNodeContent = observer(
 						kind: isActive
 							? "chevron-right-circle"
 							: "chevron-right",
-						className: expanded
-							? "file-node__expander_expanded"
-							: "",
+						className: expanded ? css.expanderIdExpanded : "",
 						onClick: toggleExpand,
 					}
 				: { kind: isActive ? "circle-dot" : "dot" };
@@ -118,10 +118,10 @@ export const FileNodeContent = observer(
 		return (
 			<div
 				className={join([
-					"file-node__container",
-					isHighlighted && "file-node__container_highlight",
-					`file-node__container_kind-${kind}`,
-					hasIndent && "file-node__container_indented",
+					css.container,
+					isHighlighted && css.containerIsHighlighted,
+					css[`containerKind${kind}`],
+					hasIndent && css.containerHasIndent,
 				])}
 				onClick={onClick}
 				onMouseEnter={() => ctx.highlightPicker.pick(node)}
@@ -131,37 +131,32 @@ export const FileNodeContent = observer(
 					<ObsIcon
 						kind={expanderIcon.kind}
 						size="xs"
-						className={join([
-							"file-node__expander",
-							expanderIcon.className,
-						])}
+						className={join([css.expander, expanderIcon.className])}
 					/>
 				</Clickable>
-				<div className="file-node__content-wrapper">
+				<div className={css.contentWrapper}>
 					<div
-						className="file-node__content"
+						className={css.content}
 						ref={textElRef}
 						title={textElTooltip}
 					>
-						<span className="file-node__content-text">
+						<span className={css.contentText}>
 							{getFileName(ctx, file)}
 						</span>
 						{isPrev ? (
 							<ObsIcon
-								className="file-node__content-last-icon"
+								className={css.contentLastIcon}
 								size="xs"
 								kind="history"
 							/>
 						) : null}
 					</div>
 					{file.parent?.path && file.parent.path !== "/" ? (
-						<div className="file-node__path">
-							{file.parent.path}
-						</div>
+						<div className={css.path}>{file.parent.path}</div>
 					) : null}
 				</div>
 
-				<div className="file-node__content-side">
+				<div className={css.contentSide}>
 					{!isActive && hasActive && (
 						<Clickable
 							onClick={handleToggleLink}

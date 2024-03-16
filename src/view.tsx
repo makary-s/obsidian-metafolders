@@ -1,12 +1,14 @@
 import { Root, createRoot } from "react-dom/client";
 import React from "react";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
-import { MainView } from "./components/MainView";
-import { TopBar } from "./components/TopBar";
+import { MainView } from "./components/MainView/MainView";
+import { TopBar } from "./components/TopBar/TopBar";
 import { AppContext } from "./hooks/context";
 import { PLUGIN_ICON_NAME, PLUGIN_TITLE, PLUGIN_VIEW_ID } from "./constants";
 import { PluginContext } from "./context";
 import { updateRootFile } from "./utils/hierarchy";
+
+import "./styles/styles.scss";
 
 export default class HierarchyView extends ItemView {
 	root: Root | null = null;

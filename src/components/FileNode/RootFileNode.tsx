@@ -1,7 +1,7 @@
 import React, { MouseEventHandler, useCallback, useMemo } from "react";
 import { usePluginContext } from "../../hooks/context";
-import { FileNodeContent } from "./FileNodeContent";
-import { FileRelatives } from "./FileRelatives";
+import { FileNodeContent } from "./Content/FileNodeContent";
+import { FileRelatives } from "./Relatives/FileRelatives";
 import { BreadCrumb } from "src/models/bread-crumbs";
 import { updateRootFile } from "src/utils/hierarchy";
 import { HierarchyNode } from "src/models/hierarchy/node";

@@ -23,3 +23,8 @@ data.json
 
 dist
 tmp
+
+*.scss.d.ts
+./styles.css
+
+

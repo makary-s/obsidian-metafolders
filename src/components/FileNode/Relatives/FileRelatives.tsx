@@ -1,13 +1,15 @@
 import React, { useMemo } from "react";
-import { NodeKind } from "./types";
-import { FileNode } from "./FileNode";
-import { Collapsible } from "src/base-components/Collapsible";
+import { NodeKind } from "../types";
+import { FileNode } from "../FileNode";
+import { Collapsible } from "src/components-base/Collapsible";
 import { BreadCrumb } from "src/models/bread-crumbs";
 import { HierarchyNode } from "src/models/hierarchy/node";
 import { usePluginContext } from "src/hooks/context";
 import { sortFiles } from "src/utils/hierarchy";
 import { join } from "src/utils/basic";
 import { observer } from "mobx-react-lite";
+
+import css from "./FileRelatives.scss";
 
 export const FileRelatives = observer(
 	({
@@ -35,17 +37,12 @@ export const FileRelatives = observer(
 		const isHighlighted = ctx.highlightPicker.getObservableValue(node);
 
 		return (
-			<div
-				className={join([
-					"file-node__relatives",
-					expanded && "file-node__relatives_hidden",
-				])}
-			>
+			<div className={css.root}>
 				{hasIndent ? (
 					<div
 						className={join([
-							"file-node__indent ",
-							isHighlighted && "file-node__indent_highlight",
+							css.indent,
+							isHighlighted && css.indentIsHighlighted,
 						])}
 						onMouseEnter={() => ctx.highlightPicker.pick(node)}
 						onMouseLeave={() => ctx.highlightPicker.pick(null)}
@@ -54,7 +51,7 @@ export const FileRelatives = observer(
 
 				<Collapsible
 					expanded={expanded}
-					className="file-node__relatives-container"
+					className={css.relativesContainer}
 				>
 					{sortedNodes.map((child) => (
 						<FileNode

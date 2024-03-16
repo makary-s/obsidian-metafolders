@@ -1,11 +1,14 @@
 import React, { MouseEventHandler, useCallback, useRef } from "react";
 import { usePluginContext } from "../../hooks/context";
 import { FileNodeProps } from "./types";
-import { FileNodeContent } from "./FileNodeContent";
-import { FileRelatives } from "./FileRelatives";
+import { FileNodeContent } from "./Content/FileNodeContent";
+import { FileRelatives } from "./Relatives/FileRelatives";
 import { useBreadCrumpChild } from "src/hooks/bread-crumbs";
 import { useAtomCollection } from "src/hooks/atom";
 import { updateRootFile } from "src/utils/hierarchy";
+
+import css from "./FileNode.scss";
+import { join } from "src/utils/basic";
 
 export const FileNode = ({
 	node,
@@ -57,7 +60,7 @@ export const FileNode = ({
 	);
 
 	return (
-		<div className={`file-node file-node_kind-${kind}`}>
+		<div className={join([css.root, css[`kind${kind}`]])}>
 			<FileNodeContent
 				node={node}
 				kind={kind}

@@ -1,9 +1,12 @@
 import { Menu, Notice } from "obsidian";
 import React, { useCallback, useMemo, useState } from "react";
-import { ObsIcon } from "../base-components/ObsIcon";
+import { ObsIcon } from "../../components-base/ObsIcon/ObsIcon";
 import { SortModeKind, SortMode } from "src/types";
 import { usePluginContext } from "src/hooks/context";
-import { Clickable } from "src/base-components/Clickable";
+import { Clickable } from "src/components-base/Clickable/Clickable";
+
+import css from "./SortMenu.scss";
+import { join } from "src/utils/basic";
 
 const sortKindText: Record<SortModeKind, string> = {
 	title: "T",
@@ -93,12 +96,12 @@ export const SortMenu = () => {
 	return (
 		<Clickable
 			tooltip="Change sort order"
-			className="sort-mode__container obs-icon_clickable"
+			// TODO class name
+			className={join([css.root, "obs-icon_clickable"])}
 			onClick={onClick}
 		>
 			<span>{sortKindText[state.kind]}</span>
 			<ObsIcon
-				className="sort-mode__direction-icon"
 				kind={
 					state.direction === "asc"
 						? "arrow-up-narrow-wide"

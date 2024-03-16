@@ -1,0 +1,12 @@
+.root {
+	display: flex;
+	flex-direction: column;
+
+	&.kindchild {
+		flex-direction: column;
+	}
+
+	&.kindparent {
+		flex-direction: column-reverse;
+	}
+}

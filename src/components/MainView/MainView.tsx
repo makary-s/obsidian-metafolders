@@ -1,7 +1,9 @@
 import React, { useMemo } from "react";
-import { usePluginContext } from "../hooks/context";
-import { RootFileNode } from "./FileNode/RootFileNode";
+import { usePluginContext } from "../../hooks/context";
+import { RootFileNode } from "../FileNode/RootFileNode";
 import { useAtomObject } from "src/hooks/atom";
+
+import css from "./MainView.scss";
 
 export const MainView = () => {
 	const ctx = usePluginContext();
@@ -15,7 +17,7 @@ export const MainView = () => {
 	if (!node) return null;
 
 	return (
-		<div className="mf-root">
+		<div className={css.root}>
 			<RootFileNode node={node} key={node.id + rootKey} />
 		</div>
 	);
