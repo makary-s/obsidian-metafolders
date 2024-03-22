@@ -1,8 +1,8 @@
 import { TFile } from "obsidian";
 import {
 	checkHasPropByPosition,
+	createFullLink,
 	extractMdLinkPath,
-	getFileName,
 	getRelativeFileByName,
 } from "./obsidian";
 import { PluginContext } from "src/context";
@@ -58,8 +58,6 @@ export const addParentLink = async (
 	});
 
 	ctx.app.fileManager.processFrontMatter(p.node.data, (frontMatter) => {
-		const newValue = `[[${p.linkedNode.data.basename}]]`;
-
 		if (checkLinked()) {
 			finished.resolve();
 			return;
@@ -68,7 +66,7 @@ export const addParentLink = async (
 		getNormalizedFrontmatterArray(
 			frontMatter,
 			ctx.settings.get("parentPropName"),
-		).push(newValue);
+		).push(createFullLink(ctx, p.linkedNode.data));
 	});
 
 	await finished;
@@ -177,42 +175,4 @@ export const updateRootFile = (
 			ctx.history.push(newFile);
 		}
 	}
-};
-
-const getSortItemsFn = (
-	ctx: PluginContext,
-): ((a: HierarchyNode, b: HierarchyNode) => number) => {
-	const { sortMode } = ctx.settings.current;
-
-	switch (sortMode.kind) {
-		case "title":
-			return (a: HierarchyNode, b: HierarchyNode) => {
-				const fileNameA = getFileName(ctx, a.data);
-				const fileNameB = getFileName(ctx, b.data);
-				return sortMode.direction === "asc"
-					? fileNameA.localeCompare(fileNameB)
-					: fileNameB.localeCompare(fileNameA);
-			};
-		case "modifiedTime":
-			return (a: HierarchyNode, b: HierarchyNode) => {
-				return sortMode.direction === "asc"
-					? a.data.stat.mtime - b.data.stat.mtime
-					: b.data.stat.mtime - a.data.stat.mtime;
-			};
-		case "createdTime":
-			return (a: HierarchyNode, b: HierarchyNode) => {
-				return sortMode.direction === "asc"
-					? a.data.stat.ctime - b.data.stat.ctime
-					: b.data.stat.ctime - a.data.stat.ctime;
-			};
-		default:
-			throw new Error(`Unsupported sort mode: ${sortMode.kind}`);
-	}
-};
-
-export const sortFiles = (
-	ctx: PluginContext,
-	files: HierarchyNode[],
-): HierarchyNode[] => {
-	return files.sort(getSortItemsFn(ctx));
 };

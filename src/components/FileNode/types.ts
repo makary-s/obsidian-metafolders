@@ -1,12 +1,8 @@
-import { TFile } from "obsidian";
-import { BreadCrumb } from "src/models/bread-crumbs";
-import { HierarchyNode } from "src/models/hierarchy/node";
+import { NodeView } from "src/models/node-view/node-view";
 
 export type NodeKind = "child" | "parent";
 
 export type FileNodeProps = {
-	node: HierarchyNode;
+	node: NodeView;
 	kind: NodeKind;
-	parentBreadCrump: BreadCrumb;
-	collapsedDepth: number;
 };

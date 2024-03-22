@@ -1,6 +1,4 @@
-export type SortModeKind = "title" | "modifiedTime" | "createdTime";
-export type SortModeDirection = "asc" | "desc";
-export type SortMode = { kind: SortModeKind; direction: SortModeDirection };
+import { SortMode } from "./models/hierarchy/types";
 
 export type PluginSettings = {
 	parentPropName: string;

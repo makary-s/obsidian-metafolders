@@ -1,15 +1,16 @@
-import { action, observable } from "mobx";
+import { action, makeObservable, observable } from "mobx";
 
 export interface PickerObservable {
 	current: boolean;
 }
 
 export class SinglePicker<T extends object> {
-	currentTarget?: T;
+	private currentTarget?: T;
 
-	targets = new WeakMap<T, PickerObservable>();
+	private targets = new WeakMap<T, PickerObservable>();
 
-	pick = action((target: T | null) => {
+	@action
+	pick = (target: T | null) => {
 		if (target === null) {
 			this.drop();
 			return;
@@ -19,17 +20,18 @@ export class SinglePicker<T extends object> {
 
 		this.currentTarget = target;
 
-		this.onDropTarget(oldTarget);
+		if (oldTarget !== target) this.onDropTarget(oldTarget);
 		this.onPickTarget(target);
-	});
+	};
 
-	drop = action(() => {
+	@action
+	drop = () => {
 		const oldTarget = this.currentTarget;
 
 		this.currentTarget = undefined;
 
 		this.onDropTarget(oldTarget);
-	});
+	};
 
 	private onDropTarget = (target: T | undefined) => {
 		if (target === undefined) return;
@@ -67,16 +69,21 @@ export class SinglePicker<T extends object> {
 		return this.getObservable(target).current;
 	}
 
-	hasObservableValue = (): boolean => {
-		return this.currentTarget !== undefined;
+	getCurrent = (): T | undefined => {
+		return this.currentTarget;
 	};
+
+	constructor() {
+		makeObservable(this);
+	}
 }
 
 export class Picker<T extends object> {
-	currentTargets: Set<T> = new Set();
+	private currentTargets: Set<T> = new Set();
 
-	targets = new WeakMap<T, PickerObservable>();
+	private targets = new WeakMap<T, PickerObservable>();
 
+	@action
 	pickOnly = action((target: T | null) => {
 		this.clear();
 
@@ -87,21 +94,23 @@ export class Picker<T extends object> {
 		this.pickOnly(target);
 	});
 
-	pick = action((target: T) => {
+	@action
+	pick = (target: T) => {
 		if (this.currentTargets.has(target)) {
 			return;
 		}
 
 		this.currentTargets.add(target);
 		this.onPickTarget(target);
-	});
+	};
 
-	clear = action(() => {
+	@action
+	clear = () => {
 		this.currentTargets.forEach((target) => {
 			this.currentTargets.delete(target);
 			this.onDropTarget(target);
 		});
-	});
+	};
 
 	private onDropTarget = (target: T) => {
 		const oldObs = this.targets.get(target);
@@ -137,7 +146,11 @@ export class Picker<T extends object> {
 		return this.getObservable(target).current;
 	}
 
-	hasObservableValue = (): boolean => {
-		return this.currentTargets.size > 0;
+	getCurrent = (): Omit<Set<T>, "add" | "delete"> => {
+		return this.currentTargets;
 	};
+
+	constructor() {
+		makeObservable(this);
+	}
 }

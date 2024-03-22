@@ -1,7 +1,7 @@
 import { Menu, Notice } from "obsidian";
 import React, { useCallback, useMemo, useState } from "react";
 import { ObsIcon } from "../../components-base/ObsIcon";
-import { SortModeKind, SortMode } from "src/types";
+import { SortMode, SortModeKind } from "src/models/hierarchy/types";
 import { usePluginContext } from "src/hooks/context";
 import { Clickable } from "src/components-base/Clickable";
 

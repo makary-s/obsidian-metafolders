@@ -1,70 +1,32 @@
-import React, {
-	MouseEventHandler,
-	useCallback,
-	useEffect,
-	useState,
-} from "react";
+import React from "react";
 import { usePluginContext } from "../../../hooks/context";
 import { ObsIcon } from "../../../components-base/ObsIcon";
 import { NodeKind } from "../types";
-import { PluginContext } from "src/context";
-import {
-	addParentLink,
-	checkActiveFileHasParent,
-	getActiveFileNode,
-	removeParentLink,
-} from "src/utils/hierarchy";
-import { getFileName } from "src/utils/obsidian";
+
 import { Clickable } from "src/components-base/Clickable";
 import { join } from "src/utils/basic";
-import { HierarchyNode } from "src/models/hierarchy/node";
 import { observer } from "mobx-react-lite";
 
 import css from "./FileNodeContent.scss";
-
-const useIsLinked = (ctx: PluginContext, node: HierarchyNode) => {
-	const currentIsLinked = checkActiveFileHasParent(ctx, node);
-
-	const [oldIsLinked, setIsLinked] = useState(currentIsLinked);
-
-	useEffect(() => {
-		setIsLinked(currentIsLinked);
-	}, [currentIsLinked]);
-
-	const updateIsLinked = useCallback(() => {
-		const newIsLinked = checkActiveFileHasParent(ctx, node);
-
-		if (oldIsLinked !== newIsLinked) {
-			setIsLinked(newIsLinked);
-		}
-	}, [setIsLinked]);
-
-	return [currentIsLinked, updateIsLinked] as const;
-};
+import { NodeView } from "src/models/node-view/node-view";
 
 export const FileNodeContent = observer(
 	({
 		node,
 		kind,
 		hasIndent = true,
-		expanded,
-		toggleExpand,
-		onClick,
 		noArrow = false,
 	}: {
-		node: HierarchyNode;
+		node: NodeView;
 		kind: NodeKind | "root";
 		hasIndent?: boolean;
-		expanded?: boolean;
-		toggleExpand?: MouseEventHandler<HTMLElement>;
-		onClick: MouseEventHandler<HTMLElement>;
 		noArrow?: boolean;
 	}) => {
 		const ctx = usePluginContext();
 
-		const isHighlighted = ctx.highlightPicker.getObservableValue(node);
-		const isActive = ctx.activePicker.getObservableValue(node);
-		const hasActive = ctx.activePicker.hasObservableValue();
+		const isHighlighted = ctx.highlightPicker.getObservableValue(node.node);
+		const isActive = ctx.activePicker.getObservableValue(node.node);
+		const hasActive = ctx.activePicker.getCurrent() !== undefined;
 
 		const expanderIcon =
 			kind !== "root" && node.hasRelatives[kind] && noArrow === false
@@ -72,47 +34,17 @@ export const FileNodeContent = observer(
 						kind: isActive
 							? "chevron-right-circle"
 							: "chevron-right",
-						className: expanded ? css.expanded : "",
-						onClick: toggleExpand,
+						className: node.getExpanded() ? css.expanded : "",
+						onClick: node.toggleExpanded,
 					}
 				: { kind: isActive ? "circle-dot" : "dot" };
-
-		const [isLinked, updateIsLinked] = useIsLinked(ctx, node);
-
-		const file = node.data;
-
-		const handleToggleLink: MouseEventHandler<HTMLElement> = useCallback(
-			async (e) => {
-				e.stopPropagation();
-
-				const activeNode = getActiveFileNode(ctx);
-				if (!activeNode) return;
-
-				if (checkActiveFileHasParent(ctx, node)) {
-					await removeParentLink(ctx, {
-						node: activeNode,
-						linkedNode: node,
-					});
-				} else {
-					await addParentLink(ctx, {
-						node: activeNode,
-						linkedNode: node,
-					});
-				}
-
-				updateIsLinked();
-			},
-			[file],
-		);
-
-		const isPrev = ctx.history.checkPreviousFile(file);
 
 		const textElRef = React.useRef<HTMLDivElement>(null);
 
 		const textElTooltip =
 			textElRef.current &&
 			textElRef.current.scrollWidth > textElRef.current.clientWidth
-				? file.basename
+				? node.title
 				: undefined;
 
 		return (
@@ -123,8 +55,8 @@ export const FileNodeContent = observer(
 					css[`kind_${kind}`],
 					hasIndent && css.hasIndent,
 				])}
-				onClick={onClick}
-				onMouseEnter={() => ctx.highlightPicker.pick(node)}
+				onClick={node.onClick}
+				onMouseEnter={() => ctx.highlightPicker.pick(node.node)}
 				onMouseLeave={() => ctx.highlightPicker.pick(null)}
 			>
 				<Clickable onClick={expanderIcon.onClick}>
@@ -140,34 +72,36 @@ export const FileNodeContent = observer(
 						ref={textElRef}
 						title={textElTooltip}
 					>
-						<span className={css.contentText}>
-							{getFileName(ctx, file)}
-						</span>
-						{isPrev ? (
+						<span className={css.contentText}>{node.title}</span>
+						{node.isPerviousHistoryItem && (
 							<ObsIcon
 								className={css.contentLastIcon}
 								size="xs"
 								kind="history"
 							/>
-						) : null}
+						)}
 					</div>
-					{file.parent?.path && file.parent.path !== "/" ? (
-						<div className={css.path}>{file.parent.path}</div>
-					) : null}
+					{node.folderName && (
+						<div className={css.path}>{node.folderName}</div>
+					)}
 				</div>
 
 				<div className={css.contentSide}>
 					{!isActive && hasActive && (
 						<Clickable
-							onClick={handleToggleLink}
+							onClick={node.toggleActiveNodeParent}
 							tooltip={
-								isLinked
+								node.getIsActiveNodeParent()
 									? "Unlink active file"
 									: "Link active file"
 							}
 						>
 							<ObsIcon
-								kind={isLinked ? "unlink" : "link"}
+								kind={
+									node.getIsActiveNodeParent()
+										? "unlink"
+										: "link"
+								}
 								size="xs"
 							/>
 						</Clickable>

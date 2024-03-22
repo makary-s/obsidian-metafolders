@@ -7,8 +7,8 @@ import { Atom, AtomCollection, AtomObject } from "src/models/atom";
 import HierarchyViewPlugin from "main";
 import { useAtom } from "src/hooks/atom";
 import { SinglePicker } from "src/models/Picker";
-import { HierarchyNode } from "src/models/hierarchy/node";
 import { createFileHierarchyImpl } from "src/utils/hierarchy-impl";
+import { HierarchyNode } from "src/models/hierarchy/node";
 
 class RootKey {
 	private value = new Atom<string>(String(Date.now()));

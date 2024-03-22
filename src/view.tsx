@@ -39,7 +39,7 @@ export default class HierarchyView extends ItemView {
 
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", (leaf) => {
-				const oldPath = this.ctx.activePicker.currentTarget?.data.path;
+				const oldPath = this.ctx.activePicker.getCurrent()?.path;
 				let newPath: string | null = null;
 
 				if (leaf) {

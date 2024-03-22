@@ -4,14 +4,21 @@ import { RootFileNode } from "../FileNode/RootFileNode";
 import { useAtomObject } from "src/hooks/atom";
 
 import css from "./MainView.scss";
+import { NodeView } from "src/models/node-view";
 
 export const MainView = () => {
 	const ctx = usePluginContext();
 	const rootFilePath = useAtomObject(ctx.settings, "rootFilePath");
 	const rootKey = ctx.rootKey.useValue();
 
+	// TODO refactor?
 	const node = useMemo(() => {
-		return rootFilePath ? ctx.hierarchy.getNode(rootFilePath) : null;
+		const node = rootFilePath
+			? NodeView.detRootByPath(ctx, rootFilePath)
+			: null;
+		if (node === null) return null;
+
+		return node;
 	}, [rootFilePath]);
 
 	if (!node) return null;

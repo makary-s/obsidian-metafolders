@@ -18,7 +18,7 @@ export type SubscribeFn = (node: HierarchyNode) => void;
 export type HierarchyNodeStatus = "idle" | "loading" | "ready";
 
 export class HierarchyNode {
-	data: TFile;
+	@observable data: TFile;
 	id: string = randomUUID();
 
 	status: Record<Relation, HierarchyNodeStatus> = observable({
@@ -26,7 +26,8 @@ export class HierarchyNode {
 		parent: "idle",
 	});
 
-	relatives = {
+	@observable
+	protected _relatives = {
 		child: new Set<HierarchyNode>(),
 		parent: new Set<HierarchyNode>(),
 	};
@@ -39,29 +40,23 @@ export class HierarchyNode {
 		this.hierarchy = p.hierarchy;
 		this.impl = p.impl;
 
-		makeObservable(this, {
-			data: observable,
-			relatives: observable,
-			updateSpecificRelatives: action,
-			hasRelatives: computed.struct,
-		});
+		makeObservable(this);
 
 		this.updateRelatives();
 	}
 
+	@computed.struct
+	get relatives(): Record<Relation, Omit<Set<HierarchyNode>, "set">> {
+		return this._relatives;
+	}
+
+	// TODO make @computed?
 	get path(): string {
 		return this.impl.getPath(this.data);
 	}
 
-	get hasRelatives(): Record<Relation, boolean> {
-		return {
-			child: this.relatives.child.size > 0,
-			parent: this.relatives.parent.size > 0,
-		};
-	}
-
 	hasRelative(relation: Relation, node: HierarchyNode): boolean {
-		return this.relatives[relation].has(node);
+		return this._relatives[relation].has(node);
 	}
 
 	findRelativeFiles(relation: Relation): Promise<TFile[]> {
@@ -73,9 +68,12 @@ export class HierarchyNode {
 		}
 	}
 
-	// TODO make private
-	setSpecificRelatives(relation: Relation, nodes: Set<HierarchyNode>) {
-		this.relatives[relation] = nodes;
+	@action
+	private setSpecificRelatives(
+		relation: Relation,
+		nodes: Set<HierarchyNode>,
+	) {
+		this._relatives[relation] = nodes;
 	}
 
 	async updateSpecificRelatives(relation: Relation) {
@@ -88,8 +86,9 @@ export class HierarchyNode {
 			files.map((data) => this.hierarchy.getNode(data.path)),
 		);
 		nodes.delete(this); // prevent self-reference
-		const updatedNodes = getSetDiff(this.relatives[relation], nodes);
+		const updatedNodes = getSetDiff(this._relatives[relation], nodes);
 
+		// have to use separate action, because this method is async
 		this.setSpecificRelatives(relation, nodes);
 
 		const relUpdatePromises = [...updatedNodes].map((updatedNode) => {
