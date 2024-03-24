@@ -88,7 +88,7 @@ export class NodeView {
 
 	@computed
 	get isPerviousHistoryItem(): boolean {
-		return this.ctx.history.checkPreviousFile(this.node.data);
+		return this.ctx.history.previous === this.node.data;
 	}
 
 	@computed

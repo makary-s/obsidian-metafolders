@@ -1,6 +1,5 @@
-import { App } from "obsidian";
+import { App, TFile } from "obsidian";
 import { PluginSettings } from "src/types";
-import { FilesHistory } from "./history";
 import { Hierarchy } from "src/models/hierarchy";
 import { getFileByPath, waitFilesLoaded } from "src/utils/obsidian";
 import { Atom, AtomCollection, AtomObject } from "src/models/atom";
@@ -9,6 +8,7 @@ import { useAtom } from "src/hooks/atom";
 import { SinglePicker } from "src/models/Picker";
 import { createFileHierarchyImpl } from "src/utils/hierarchy-impl";
 import { HierarchyNode } from "src/models/hierarchy/node";
+import { HistoryStore, createFileHistoryStore } from "src/models/history";
 
 class RootKey {
 	private value = new Atom<string>(String(Date.now()));
@@ -27,7 +27,7 @@ export class PluginContext {
 	plugin: HierarchyViewPlugin;
 	settings: AtomObject<PluginSettings>;
 
-	history: FilesHistory;
+	history: HistoryStore<TFile>;
 	expanded: AtomCollection<boolean>;
 	hierarchy: Hierarchy;
 	highlightPicker: SinglePicker<HierarchyNode>;
@@ -42,7 +42,7 @@ export class PluginContext {
 		this.settings = new AtomObject(settings);
 		this.settings.subscribe(() => plugin.saveData(this.settings.current));
 
-		this.history = new FilesHistory();
+		this.history = createFileHistoryStore(this, 30);
 
 		waitFilesLoaded(this.app).then(() => {
 			const rootFilePath = this.settings.get("rootFilePath");

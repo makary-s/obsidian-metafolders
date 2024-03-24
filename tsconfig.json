@@ -21,7 +21,8 @@
 		],
 		"jsx": "react",
 		"allowSyntheticDefaultImports": true,
-		"experimentalDecorators": true
+		"experimentalDecorators": true,
+		"noEmit": true
 	},
 	"include": [
 		"**/*.ts",

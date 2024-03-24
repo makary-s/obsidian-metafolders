@@ -8,6 +8,7 @@ import { SortMenu } from "src/components/SortMenu";
 import { Clickable } from "src/components-base/Clickable";
 
 import css from "./TopBar.scss";
+import { observer } from "mobx-react-lite";
 
 const useProps = () => {
 	const ctx = usePluginContext();
@@ -17,30 +18,16 @@ const useProps = () => {
 		updateRootFile(ctx);
 	}, []);
 
-	const onUndo = useCallback(() => {
-		const previousFile = ctx.history.undo();
-
-		updateRootFile(ctx, previousFile, false);
-	}, []);
-
-	const onRedo = useCallback(() => {
-		const previousFile = ctx.history.redo();
-
-		updateRootFile(ctx, previousFile, false);
-	}, []);
-
 	const isAutoRefresh = useAtomObject(ctx.settings, "isAutoRefresh");
 
 	return {
-		...ctx.history.useValue(),
-		onUndo,
-		onRedo,
+		history: ctx.history,
 		isAutoRefresh,
 		toggleAutoRefresh,
 	};
 };
 
-export const TopBar = () => {
+export const TopBar = observer(() => {
 	const p = useProps();
 	const ctx = usePluginContext();
 
@@ -87,16 +74,16 @@ export const TopBar = () => {
 			</div>
 			<div className={css.history}>
 				<Clickable
-					disabled={!p.hasUndo}
-					onClick={p.onUndo}
+					disabled={!p.history.hasUndo}
+					onClick={p.history.undo}
 					tooltip="Navigate back"
 				>
 					<ObsIcon kind={"arrow-left"} size="s" />
 				</Clickable>
 
 				<Clickable
-					disabled={!p.hasRedo}
-					onClick={p.onRedo}
+					disabled={!p.history.hasRedo}
+					onClick={p.history.redo}
 					tooltip="Navigate forward"
 				>
 					<ObsIcon kind={"arrow-right"} size="s" />
@@ -104,4 +91,4 @@ export const TopBar = () => {
 			</div>
 		</div>
 	);
-};
+});
