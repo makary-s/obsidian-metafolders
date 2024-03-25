@@ -2,25 +2,13 @@ import { App, TFile } from "obsidian";
 import { PluginSettings } from "src/types";
 import { Hierarchy } from "src/models/hierarchy";
 import { getFileByPath, waitFilesLoaded } from "src/utils/obsidian";
-import { Atom, AtomCollection, AtomObject } from "src/models/atom";
+import { AtomObject } from "src/models/atom";
 import HierarchyViewPlugin from "main";
-import { useAtom } from "src/hooks/atom";
 import { SinglePicker } from "src/models/Picker";
 import { createFileHierarchyImpl } from "src/utils/hierarchy-impl";
 import { HierarchyNode } from "src/models/hierarchy/node";
 import { HistoryStore, createFileHistoryStore } from "src/models/history";
-
-class RootKey {
-	private value = new Atom<string>(String(Date.now()));
-
-	useValue = () => {
-		return useAtom(this.value);
-	};
-
-	update = () => {
-		this.value.set(String(Date.now()));
-	};
-}
+import { IdObs } from "src/models/IdObs/idObs";
 
 export class PluginContext {
 	app: App;
@@ -28,12 +16,11 @@ export class PluginContext {
 	settings: AtomObject<PluginSettings>;
 
 	history: HistoryStore<TFile>;
-	expanded: AtomCollection<boolean>;
 	hierarchy: Hierarchy;
 	highlightPicker: SinglePicker<HierarchyNode>;
 	activePicker: SinglePicker<HierarchyNode>;
 
-	rootKey = new RootKey();
+	rootKey = new IdObs();
 
 	constructor(plugin: HierarchyViewPlugin, settings: PluginSettings) {
 		this.app = plugin.app;
@@ -69,8 +56,6 @@ export class PluginContext {
 				this.settings.set("isAutoRefresh", true);
 			}
 		});
-
-		this.expanded = new AtomCollection(false);
 
 		this.hierarchy = Hierarchy.create({
 			impl: createFileHierarchyImpl(this),

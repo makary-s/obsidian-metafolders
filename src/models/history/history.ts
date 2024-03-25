@@ -18,7 +18,6 @@ export class HistoryStore<T> {
 
 	@computed
 	get hasUndo(): boolean {
-		console.log(this.items.length);
 		for (let i = this.offset; i < this.items.length; i++) {
 			const item = this.items.at(-i);
 
@@ -57,8 +56,6 @@ export class HistoryStore<T> {
 
 		this.items = newItems;
 		this.offset = 1;
-
-		console.log("push", this.items);
 	};
 
 	@action

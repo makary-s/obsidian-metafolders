@@ -9,7 +9,6 @@ import { NodeView } from "src/models/node-view";
 export const MainView = () => {
 	const ctx = usePluginContext();
 	const rootFilePath = useAtomObject(ctx.settings, "rootFilePath");
-	const rootKey = ctx.rootKey.useValue();
 
 	// TODO refactor?
 	const node = useMemo(() => {
@@ -25,7 +24,7 @@ export const MainView = () => {
 
 	return (
 		<div className={css.root}>
-			<RootFileNode node={node} key={node.id + rootKey} />
+			<RootFileNode node={node} key={node.id + ctx.rootKey.get()} />
 		</div>
 	);
 };

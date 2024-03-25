@@ -8,3 +8,5 @@ node_modules
 
 *.scss.d.ts
 /src/**/*.js
+
+*.bundle.txt
