@@ -1,0 +1,35 @@
+.root {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	border-radius: var(--radius-s);
+
+	transition: background-color 300ms;
+}
+
+.size {
+	&_xs svg {
+		height: var(--icon-xs);
+		width: var(--icon-xs);
+		stroke-width: var(--icon-xs-stroke-width);
+	}
+
+	&_s svg {
+		height: var(--icon-s);
+		width: var(--icon-s);
+		stroke-width: var(--icon-s-stroke-width);
+	}
+
+	&_m svg {
+		height: var(--icon-m);
+		width: var(--icon-m);
+		stroke-width: var(--icon-m-stroke-width);
+	}
+
+	&_xl svg {
+		height: var(--icon-xl);
+		width: var(--icon-xl);
+		stroke-width: var(--icon-xl-stroke-width);
+	}
+}

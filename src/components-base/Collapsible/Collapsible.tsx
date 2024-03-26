@@ -1,6 +1,8 @@
 import React, { PropsWithChildren, useLayoutEffect, useRef } from "react";
 import { clampNumber, join } from "src/utils/basic";
 
+import css from "./Collapsible.scss";
+
 const MAX_MS_PER_PX = 300;
 const MIN_MS_PER_PX = 80;
 
@@ -68,7 +70,7 @@ export const Collapsible = ({
 	}, [expanded, elRef, msPerPx]);
 
 	return (
-		<div ref={elRef} className={join(["collapsible-div", className])}>
+		<div ref={elRef} className={join([css.root, className])}>
 			{children}
 		</div>
 	);

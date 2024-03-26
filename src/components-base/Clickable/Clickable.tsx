@@ -1,6 +1,8 @@
 import React, { MouseEventHandler } from "react";
 import { join } from "src/utils/basic";
 
+import css from "./Clickable.scss";
+
 export const Clickable = (props: {
 	as?: "span" | "div" | "button";
 	disabled?: boolean;
@@ -10,7 +12,7 @@ export const Clickable = (props: {
 	children: React.ReactNode;
 }) => {
 	if (!props.onClick) {
-		return <div className="clickable_bypass">{props.children}</div>;
+		return <div className={css.clickableBypass}>{props.children}</div>;
 	}
 
 	const {
@@ -26,7 +28,7 @@ export const Clickable = (props: {
 		<Tag
 			role="button"
 			title={tooltip}
-			className={join(["clickable", className])}
+			className={join([css.clickable, className])}
 			onClick={disabled ? undefined : onClick}
 			aria-disabled={disabled}
 		>

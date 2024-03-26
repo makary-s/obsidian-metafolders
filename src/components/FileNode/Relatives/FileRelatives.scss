@@ -1,0 +1,25 @@
+.root {
+	display: flex;
+	flex-direction: row;
+}
+
+.container {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	font-size: var(--font-ui-small);
+}
+
+.indent {
+	padding-left: calc(var(--size-2-2) + var(--size-2-2) + var(--size-4-2));
+	border-right: var(--border-width) solid var(--background-modifier-border);
+	transition: border-color 300ms;
+
+	&.highlighted {
+		border-color: var(--background-modifier-border-hover);
+	}
+
+	&:hover {
+		border-color: var(--background-modifier-border-hover);
+	}
+}

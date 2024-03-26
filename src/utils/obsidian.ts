@@ -1,6 +1,7 @@
-import { App, LinkCache, TFile } from "obsidian";
-import { HEADING_TITLE_PROP_NAME } from "src/constants";
+import { App, LinkCache, TFile, normalizePath } from "obsidian";
 import { PluginContext } from "src/context";
+import { getFileName } from "src/models/node-view/impl";
+import { join } from "./basic";
 
 export const getRelativeFileByName = (
 	app: App,
@@ -61,34 +62,43 @@ export const getH1Text = (app: App, file: TFile): undefined | string => {
 	}
 };
 
-export const getFileName = (ctx: PluginContext, file: TFile): string => {
-	const { titlePropNames } = ctx.settings.current;
+export const checkHasPropByPosition = async (p: {
+	app: App;
+	file: TFile;
+	startOffset: number;
+	parentPropName: string;
+}): Promise<boolean> => {
+	const content = await p.app.vault.read(p.file);
 
-	if (titlePropNames.length === 0) {
-		return file.basename;
+	let currentIndex = p.startOffset - 1;
+	const lineChars = [] as string[];
+
+	while (currentIndex >= 0) {
+		const char = content[currentIndex];
+		if (char === undefined || char === "\n") break;
+		lineChars.push(char);
+		currentIndex -= 1;
 	}
 
-	const metadata = ctx.app.metadataCache.getFileCache(file);
+	lineChars.reverse();
+	const line = lineChars.join("");
 
-	for (const titlePropName of titlePropNames) {
-		if (titlePropName === HEADING_TITLE_PROP_NAME) {
-			const headingText = getH1Text(ctx.app, file);
+	// FIXME false positive matches are possible
+	return Boolean(
+		line.match(RegExp(`(^\\s*-?\\s*|\\[)${p.parentPropName}::\\s*`)),
+	);
+};
 
-			if (headingText) {
-				return headingText;
-			}
-		}
+export const createFullLink = (ctx: PluginContext, file: TFile) => {
+	const name = getFileName(ctx, file);
+	const path = normalizePath(
+		join(
+			[file.parent?.parent ? file.parent.path : null, file.basename],
+			"/",
+		),
+	);
 
-		let title = metadata?.frontmatter?.[titlePropName];
+	if (name === path) return `[[${name}]]`;
 
-		if (Array.isArray(title)) {
-			title = title[0];
-		}
-
-		if (title !== undefined && title !== null && title !== "") {
-			return String(title);
-		}
-	}
-
-	return file.basename;
+	return `[[${path}|${name}]]`;
 };

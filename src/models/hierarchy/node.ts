@@ -3,129 +3,109 @@ import { Relation } from "./types";
 import { Hierarchy } from "./hierarchy";
 import { HierarchyImpl } from "./impl";
 import { getOppositeRelation } from "./helpers";
+import { action, computed, makeObservable, observable } from "mobx";
+import { TFile } from "obsidian";
+import { randomUUID } from "crypto";
 
-export interface HierarchyNodeCreateProps<T> {
-	hierarchy: Hierarchy<T>;
-	impl: HierarchyImpl<T>;
-	data: T;
+export interface HierarchyNodeProps {
+	hierarchy: Hierarchy;
+	impl: HierarchyImpl;
+	data: TFile;
 }
 
-export interface HierarchyNodeProps<T> {
-	hierarchy: Hierarchy<T>;
-	impl: HierarchyImpl<T>;
-	data: T;
+export type SubscribeFn = (node: HierarchyNode) => void;
 
-	relatives: Record<Relation, Set<string>>;
-	subscriptions: Record<Relation, Set<SubscribeFn<T>>>;
-	lastUpdated: Record<Relation, null | number>;
-}
+export type HierarchyNodeStatus = "idle" | "loading" | "ready";
 
-export type SubscribeFn<T> = (node: HierarchyNode<T>) => void;
+export class HierarchyNode {
+	@observable data: TFile;
+	id: string = randomUUID();
 
-export class HierarchyNode<T> {
-	static create<T>(p: HierarchyNodeCreateProps<T>): HierarchyNode<T> {
-		return new HierarchyNode({
-			...p,
-			relatives: {
-				child: new Set(),
-				parent: new Set(),
-			},
-			subscriptions: {
-				child: new Set(),
-				parent: new Set(),
-			},
-			lastUpdated: {
-				child: null,
-				parent: null,
-			},
-		});
+	status: Record<Relation, HierarchyNodeStatus> = observable({
+		child: "idle",
+		parent: "idle",
+	});
+
+	@observable
+	protected _relatives = {
+		child: new Set<HierarchyNode>(),
+		parent: new Set<HierarchyNode>(),
+	};
+
+	protected hierarchy: Hierarchy;
+	protected impl: HierarchyImpl;
+
+	constructor(protected p: HierarchyNodeProps) {
+		this.data = p.data;
+		this.hierarchy = p.hierarchy;
+		this.impl = p.impl;
+
+		makeObservable(this);
+
+		this.updateRelatives();
 	}
 
-	protected constructor(protected p: HierarchyNodeProps<T>) {}
-
-	get data(): T {
-		return this.p.data;
+	@computed.struct
+	get relatives(): Record<Relation, Omit<Set<HierarchyNode>, "set">> {
+		return this._relatives;
 	}
 
-	get key(): string {
-		return this.p.impl.getKey(this.data);
+	// TODO make @computed?
+	get path(): string {
+		return this.impl.getPath(this.data);
 	}
 
-	getRelatives(relation: Relation): HierarchyNode<T>[] {
-		const result = [] as HierarchyNode<T>[];
-
-		const relatives = this.p.relatives[relation];
-
-		for (const path of relatives) {
-			const child = this.p.hierarchy.getNode(path);
-			result.push(child);
-		}
-
-		return result;
+	hasRelative(relation: Relation, node: HierarchyNode): boolean {
+		return this._relatives[relation].has(node);
 	}
 
-	hasRelative(relation: Relation, key: string): boolean {
-		return this.p.relatives[relation].has(key);
-	}
-
-	subscribe(relation: Relation, cb: SubscribeFn<T>): () => void {
-		this.p.subscriptions[relation].add(cb);
-
-		return () => this.p.subscriptions[relation].delete(cb);
-	}
-
-	protected dispatch(relation: Relation) {
-		this.p.subscriptions[relation].forEach((cb) => cb(this));
-	}
-
-	protected fetchRelatives(relation: Relation): Promise<T[]> {
+	findRelativeFiles(relation: Relation): Promise<TFile[]> {
 		switch (relation) {
 			case "child":
-				return this.p.impl.getChildren(this.data);
+				return this.impl.getChildren(this.data);
 			case "parent":
-				return this.p.impl.getParents(this.data);
+				return this.impl.getParents(this.data);
 		}
 	}
 
-	async forceUpdateSpecificRelatives(relation: Relation) {
-		const nodes = this.getRelatives(relation);
-		nodes.forEach((child) => child.dispatch(getOppositeRelation(relation)));
+	@action
+	private setSpecificRelatives(
+		relation: Relation,
+		nodes: Set<HierarchyNode>,
+	) {
+		this._relatives[relation] = nodes;
 	}
 
-	async updateSpecificRelatives(
-		relation: Relation,
-		updateInitialTime = Date.now(),
-	) {
-		if (updateInitialTime === this.p.lastUpdated[relation]) return;
-		this.p.lastUpdated[relation] = updateInitialTime;
+	@action
+	async updateSpecificRelatives(relation: Relation) {
+		if (this.status[relation] === "loading") return;
+		this.status[relation] = "loading";
 
-		const items = await this.fetchRelatives(relation);
+		const files = await this.findRelativeFiles(relation);
 
-		const newItems = new Set(items.map((data) => this.p.impl.getKey(data)));
-		newItems.delete(this.key); // prevent self-reference
+		const nodes = new Set(
+			files.map((data) => this.hierarchy.getNode(data.path)),
+		);
+		nodes.delete(this); // prevent self-reference
+		const updatedNodes = getSetDiff(this._relatives[relation], nodes);
 
-		const updatedItems = getSetDiff(this.p.relatives[relation], newItems);
+		// have to use separate action, because this method is async
+		this.setSpecificRelatives(relation, nodes);
 
-		this.p.relatives[relation] = newItems;
-
-		updatedItems.forEach((item) => {
-			this.p.hierarchy
-				.getNodeSafe(item)
-				?.updateSpecificRelatives(
-					getOppositeRelation(relation),
-					updateInitialTime,
-				);
+		const relUpdatePromises = [...updatedNodes].map((updatedNode) => {
+			return updatedNode.updateSpecificRelatives(
+				getOppositeRelation(relation),
+			);
 		});
 
-		if (updatedItems.size > 0) {
-			this.dispatch(relation);
-		}
+		await Promise.all(relUpdatePromises);
+		this.status[relation] = "ready";
 	}
 
-	async updateRelatives(updateInitialTime = Date.now()) {
+	async updateRelatives() {
 		await Promise.all([
-			this.updateSpecificRelatives("child", updateInitialTime),
-			this.updateSpecificRelatives("parent", updateInitialTime),
+			this.updateSpecificRelatives("child"),
+			this.updateSpecificRelatives("parent"),
 		]);
 	}
 }

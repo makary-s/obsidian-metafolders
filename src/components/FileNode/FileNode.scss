@@ -1,0 +1,14 @@
+.root {
+	display: flex;
+	flex-direction: column;
+
+	&.kind {
+		&_child {
+			flex-direction: column;
+		}
+
+		&_parent {
+			flex-direction: column-reverse;
+		}
+	}
+}

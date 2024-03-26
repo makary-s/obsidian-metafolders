@@ -4,10 +4,14 @@
 	"description": "An Obsidian plugin for multi-dimensional note navigation",
 	"main": "main.js",
 	"scripts": {
-		"dev": "node esbuild.config.mjs",
+		"dev": "concurrently npm:dev:*",
+		"dev:ts": "node esbuild.config.mjs",
+		"dev:css-types": "typed-scss-modules \"src/**/*.scss\" --nameFormat dashes --watch --logLevel error",
 		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"build-dist": "npm run build && mkdir -p dist/obsidian-metafolders && cp main.js manifest.json styles.css dist/obsidian-metafolders/",
-		"publish": "bash ./scripts/publish.sh"
+		"publish": "bash ./scripts/publish.sh",
+		"clean:src": "cd src && git clean -fdX",
+		"clean:all": "git clean -fdX"
 	},
 	"keywords": [
 		"obsidian"
@@ -18,20 +22,28 @@
 		"@types/node": "^16.11.6",
 		"@types/react": "^18.2.52",
 		"@types/react-dom": "^18.2.18",
-		"@typescript-eslint/eslint-plugin": "5.29.0",
-		"@typescript-eslint/parser": "5.29.0",
+		"@typescript-eslint/eslint-plugin": "^7.2.0",
+		"@typescript-eslint/parser": "^7.2.0",
 		"builtin-modules": "3.3.0",
-		"esbuild": "0.17.3",
-		"eslint": "^8.56.0",
+		"concurrently": "^8.2.2",
+		"dotenv": "^16.4.5",
+		"esbuild": "^0.20.2",
+		"esbuild-sass-plugin": "^3.2.0",
+		"eslint": "^8.57.0",
 		"eslint-config-prettier": "^9.1.0",
 		"eslint-plugin-prettier": "^5.1.3",
-		"eslint-plugin-react": "^7.33.2",
+		"eslint-plugin-react": "^7.34.1",
 		"obsidian": "^1.4.11",
+		"postcss": "^8.4.35",
+		"postcss-modules": "^6.0.0",
 		"prettier": "^3.2.5",
-		"tslib": "2.4.0",
-		"typescript": "4.7.4"
+		"tslib": "^2.6.2",
+		"typed-scss-modules": "^8.0.0",
+		"typescript": "^5.4.2"
 	},
 	"dependencies": {
+		"mobx": "^6.12.0",
+		"mobx-react-lite": "^4.0.6",
 		"react": "npm:@preact/compat@^17.1.2",
 		"react-dom": "npm:@preact/compat@^17.1.2"
 	}

@@ -3,10 +3,12 @@ import React from "react";
 import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import { MainView } from "./components/MainView";
 import { TopBar } from "./components/TopBar";
-import { AppContext } from "./hooks/context";
+import { AppContext } from "./hooks/plugin-context";
 import { PLUGIN_ICON_NAME, PLUGIN_TITLE, PLUGIN_VIEW_ID } from "./constants";
 import { PluginContext } from "./context";
 import { updateRootFile } from "./utils/hierarchy";
+
+import "./styles/styles.scss";
 
 export default class HierarchyView extends ItemView {
 	root: Root | null = null;
@@ -37,7 +39,7 @@ export default class HierarchyView extends ItemView {
 
 		this.registerEvent(
 			this.app.workspace.on("active-leaf-change", (leaf) => {
-				const oldPath = this.ctx.currentFile.get();
+				const oldPath = this.ctx.activePicker.getCurrent()?.path;
 				let newPath: string | null = null;
 
 				if (leaf) {
@@ -49,7 +51,11 @@ export default class HierarchyView extends ItemView {
 					return;
 				}
 
-				this.ctx.currentFile.set(newPath);
+				const newNode = newPath
+					? this.ctx.hierarchy.getNode(newPath)
+					: null;
+
+				this.ctx.activePicker.pick(newNode);
 
 				if (this.ctx.settings.get("isAutoRefresh")) {
 					updateRootFile(this.ctx);

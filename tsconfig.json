@@ -20,7 +20,9 @@
 			"ES7"
 		],
 		"jsx": "react",
-		"allowSyntheticDefaultImports": true
+		"allowSyntheticDefaultImports": true,
+		"experimentalDecorators": true,
+		"noEmit": true
 	},
 	"include": [
 		"**/*.ts",

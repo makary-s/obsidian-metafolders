@@ -1,11 +1,13 @@
 import React, { useCallback } from "react";
-import { ObsIcon } from "../base-components/ObsIcon";
-import { usePluginContext } from "src/hooks/context";
+import { ObsIcon } from "../../components-base/ObsIcon";
+import { usePluginContext } from "src/hooks/plugin-context";
 import { getRelativeFileByName } from "src/utils/obsidian";
-import { useAtomObject } from "src/hooks/atom";
 import { updateRootFile } from "src/utils/hierarchy";
-import { SortMenu } from "src/components/ObsMenu";
-import { Clickable } from "src/base-components/Clickable";
+import { SortMenu } from "src/components/SortMenu";
+import { Clickable } from "src/components-base/Clickable";
+
+import css from "./TopBar.scss";
+import { observer } from "mobx-react-lite";
 
 const useProps = () => {
 	const ctx = usePluginContext();
@@ -15,42 +17,28 @@ const useProps = () => {
 		updateRootFile(ctx);
 	}, []);
 
-	const onUndo = useCallback(() => {
-		const previousFile = ctx.history.undo();
-
-		updateRootFile(ctx, previousFile, false);
-	}, []);
-
-	const onRedo = useCallback(() => {
-		const previousFile = ctx.history.redo();
-
-		updateRootFile(ctx, previousFile, false);
-	}, []);
-
-	const isAutoRefresh = useAtomObject(ctx.settings, "isAutoRefresh");
+	const isAutoRefresh = ctx.settings.get("isAutoRefresh");
 
 	return {
-		...ctx.history.useValue(),
-		onUndo,
-		onRedo,
+		history: ctx.history,
 		isAutoRefresh,
 		toggleAutoRefresh,
 	};
 };
 
-export const TopBar = () => {
+export const TopBar = observer(() => {
 	const p = useProps();
 	const ctx = usePluginContext();
 
-	const homeFilePath = useAtomObject(ctx.settings, "homeFilePath");
+	const homeFilePath = ctx.settings.get("homeFilePath");
 
 	const homeFile = homeFilePath
 		? getRelativeFileByName(ctx.app, homeFilePath, "")
 		: undefined;
 
 	return (
-		<div className="top-panel">
-			<div className="top-panel_left">
+		<div className={css.root}>
+			<div className={css.left}>
 				{homeFile ? (
 					<Clickable
 						tooltip={`Go to "${homeFile.path}"`}
@@ -71,30 +59,30 @@ export const TopBar = () => {
 					<ObsIcon
 						kind={p.isAutoRefresh ? "pin-off" : "pin"}
 						size="s"
-					/>{" "}
+					/>
 				</Clickable>
 
 				<Clickable
 					onClick={ctx.rootKey.update}
 					tooltip={"Refresh tree"}
 				>
-					<ObsIcon kind={"refresh-cw"} size="s" />{" "}
+					<ObsIcon kind={"refresh-cw"} size="s" />
 				</Clickable>
 
 				<SortMenu />
 			</div>
-			<div className="top-panel_history">
+			<div className={css.history}>
 				<Clickable
-					disabled={!p.hasUndo}
-					onClick={p.onUndo}
+					disabled={!p.history.hasUndo}
+					onClick={p.history.undo}
 					tooltip="Navigate back"
 				>
 					<ObsIcon kind={"arrow-left"} size="s" />
 				</Clickable>
 
 				<Clickable
-					disabled={!p.hasRedo}
-					onClick={p.onRedo}
+					disabled={!p.history.hasRedo}
+					onClick={p.history.redo}
 					tooltip="Navigate forward"
 				>
 					<ObsIcon kind={"arrow-right"} size="s" />
@@ -102,4 +90,4 @@ export const TopBar = () => {
 			</div>
 		</div>
 	);
-};
+});

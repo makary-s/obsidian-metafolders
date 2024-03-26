@@ -1,49 +1,31 @@
 import { App, TFile } from "obsidian";
-import { PluginSettings } from "src/types";
-import { CurrentChecker } from "./helpers";
-import { FilesHistory } from "./history";
 import { Hierarchy } from "src/models/hierarchy";
-import { createFileHierarchyImpl } from "src/utils/hierarchy";
 import { getFileByPath, waitFilesLoaded } from "src/utils/obsidian";
-import { Atom, AtomCollection, AtomObject } from "src/models/atom";
 import HierarchyViewPlugin from "main";
-import { useAtom } from "src/hooks/atom";
-
-class RootKey {
-	private value = new Atom<string>(String(Date.now()));
-
-	useValue = () => {
-		return useAtom(this.value);
-	};
-
-	update = () => {
-		this.value.set(String(Date.now()));
-	};
-}
+import { SinglePicker } from "src/models/Picker";
+import { createFileHierarchyImpl } from "src/utils/hierarchy-impl";
+import { HierarchyNode } from "src/models/hierarchy/node";
+import { HistoryStore, createFileHistoryStore } from "src/models/history";
+import { IdObs } from "src/models/id-obs/id-obs";
+import { SettingsStore } from "src/models/plugin-data";
 
 export class PluginContext {
 	app: App;
 	plugin: HierarchyViewPlugin;
-	settings: AtomObject<PluginSettings>;
+	settings: SettingsStore;
 
-	currentFile: CurrentChecker;
-	highlighted: CurrentChecker;
-	history: FilesHistory;
-	expanded: AtomCollection<boolean>;
-	hierarchy: Hierarchy<TFile>;
+	history: HistoryStore<TFile>;
+	hierarchy: Hierarchy;
+	highlightPicker: SinglePicker<HierarchyNode>;
+	activePicker: SinglePicker<HierarchyNode>;
 
-	rootKey = new RootKey();
+	rootKey = new IdObs();
 
-	constructor(plugin: HierarchyViewPlugin, settings: PluginSettings) {
+	constructor(plugin: HierarchyViewPlugin, settings: SettingsStore) {
 		this.app = plugin.app;
 		this.plugin = plugin;
-
-		this.settings = new AtomObject(settings);
-		this.settings.subscribe(() => plugin.saveData(this.settings.current));
-
-		this.currentFile = new CurrentChecker();
-
-		this.history = new FilesHistory();
+		this.settings = settings;
+		this.history = createFileHistoryStore(this, 30);
 
 		waitFilesLoaded(this.app).then(() => {
 			const rootFilePath = this.settings.get("rootFilePath");
@@ -71,12 +53,11 @@ export class PluginContext {
 			}
 		});
 
-		this.highlighted = new CurrentChecker(null);
-
-		this.expanded = new AtomCollection(false);
-
 		this.hierarchy = Hierarchy.create({
 			impl: createFileHierarchyImpl(this),
 		});
+
+		this.highlightPicker = new SinglePicker();
+		this.activePicker = new SinglePicker();
 	}
 }
