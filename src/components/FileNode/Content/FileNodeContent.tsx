@@ -1,5 +1,5 @@
 import React from "react";
-import { usePluginContext } from "../../../hooks/context";
+import { usePluginContext } from "../../../hooks/plugin-context";
 import { ObsIcon } from "../../../components-base/ObsIcon";
 import { NodeKind } from "../types";
 

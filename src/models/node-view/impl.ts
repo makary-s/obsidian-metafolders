@@ -1,9 +1,9 @@
 import { PluginContext } from "src/context";
-import { SortMode } from "../hierarchy/types";
 import { HierarchyNode } from "../hierarchy/node";
 import { TFile } from "obsidian";
 import { getH1Text } from "src/utils/obsidian";
 import { HEADING_TITLE_PROP_NAME } from "src/constants";
+import { SortMode } from "src/types";
 
 export const getFileName = (ctx: PluginContext, file: TFile): string => {
 	const { titlePropNames } = ctx.settings.current;

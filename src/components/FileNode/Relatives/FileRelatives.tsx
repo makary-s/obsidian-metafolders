@@ -2,7 +2,7 @@ import React from "react";
 import { NodeKind } from "../types";
 import { FileNode } from "../FileNode";
 import { Collapsible } from "src/components-base/Collapsible";
-import { usePluginContext } from "src/hooks/context";
+import { usePluginContext } from "src/hooks/plugin-context";
 import { join } from "src/utils/basic";
 import { observer } from "mobx-react-lite";
 

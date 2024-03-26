@@ -7,14 +7,13 @@ import {
 	WorkspaceLeaf,
 } from "obsidian";
 import {
-	DEFAULT_SETTINGS,
 	HEADING_TITLE_PROP_NAME,
 	PLUGIN_ICON_NAME,
 	PLUGIN_TITLE,
 	PLUGIN_VIEW_ID,
 } from "src/constants";
 import { PluginContext } from "src/context";
-import { PluginSettings } from "src/types";
+import { createPluginDataStore } from "src/models/plugin-data";
 import { getRelativeFileByName } from "src/utils/obsidian";
 import HierarchyView from "src/view";
 
@@ -22,11 +21,7 @@ export default class HierarchyViewPlugin extends Plugin {
 	ctx: PluginContext;
 
 	override async onload() {
-		const settings: PluginSettings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			await this.loadData(),
-		);
+		const settings = await createPluginDataStore(this);
 
 		this.ctx = new PluginContext(this, settings);
 
@@ -81,10 +76,14 @@ class SettingTab extends PluginSettingTab {
 				text
 					.setValue(this.plugin.ctx.settings.get("parentPropName"))
 					.onChange(async (value) => {
-						this.plugin.ctx.settings.set(
-							"parentPropName",
-							value || DEFAULT_SETTINGS.parentPropName,
-						);
+						if (value) {
+							this.plugin.ctx.settings.set(
+								"parentPropName",
+								value,
+							);
+						} else {
+							this.plugin.ctx.settings.reset("parentPropName");
+						}
 					}),
 			);
 
@@ -119,11 +118,16 @@ class SettingTab extends PluginSettingTab {
 							this.app,
 							normalizePath(value),
 							"",
-						);
-						this.plugin.ctx.settings.set(
-							"homeFilePath",
-							finalValue?.path || DEFAULT_SETTINGS.homeFilePath,
-						);
+						)?.path;
+
+						if (finalValue) {
+							this.plugin.ctx.settings.set(
+								"homeFilePath",
+								finalValue,
+							);
+						} else {
+							this.plugin.ctx.settings.reset("homeFilePath");
+						}
 					}),
 			);
 	}

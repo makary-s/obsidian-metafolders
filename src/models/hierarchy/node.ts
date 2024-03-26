@@ -76,6 +76,7 @@ export class HierarchyNode {
 		this._relatives[relation] = nodes;
 	}
 
+	@action
 	async updateSpecificRelatives(relation: Relation) {
 		if (this.status[relation] === "loading") return;
 		this.status[relation] = "loading";

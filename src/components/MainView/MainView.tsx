@@ -1,14 +1,14 @@
 import React, { useMemo } from "react";
-import { usePluginContext } from "../../hooks/context";
+import { usePluginContext } from "../../hooks/plugin-context";
 import { RootFileNode } from "../FileNode/RootFileNode";
-import { useAtomObject } from "src/hooks/atom";
 
 import css from "./MainView.scss";
 import { NodeView } from "src/models/node-view";
+import { observer } from "mobx-react-lite";
 
-export const MainView = () => {
+export const MainView = observer(() => {
 	const ctx = usePluginContext();
-	const rootFilePath = useAtomObject(ctx.settings, "rootFilePath");
+	const rootFilePath = ctx.settings.get("rootFilePath");
 
 	// TODO refactor?
 	const node = useMemo(() => {
@@ -27,4 +27,4 @@ export const MainView = () => {
 			<RootFileNode node={node} key={node.id + ctx.rootKey.get()} />
 		</div>
 	);
-};
+});
